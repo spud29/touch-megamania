@@ -1,4 +1,143 @@
 // Megamania Touch - Web Version
+
+// Sprite Data - Pixel Art
+const SPRITES = {
+    player: [
+        [0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0],
+        [0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0],
+        [0,0,0,0,1,1,1,2,2,1,1,1,0,0,0,0],
+        [0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+        [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+        [1,1,2,1,1,1,1,1,1,1,1,1,1,2,1,1],
+        [1,0,0,1,1,1,1,1,1,1,1,1,1,0,0,1]
+    ],
+    hamburger: [
+        [0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0],
+        [0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0],
+        [0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+        [0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,0],
+        [0,0,3,0,3,0,3,0,3,0,3,0,3,0,0,0],
+        [0,1,1,1,1,4,1,4,1,4,1,1,1,1,1,0],
+        [0,0,3,0,3,0,3,0,3,0,3,0,3,0,0,0],
+        [0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,0],
+        [0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+        [0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0],
+        [0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0]
+    ],
+    cookie: [
+        [0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0],
+        [0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0],
+        [0,0,1,1,1,2,1,1,1,1,2,1,1,1,0,0],
+        [0,1,1,1,1,1,1,1,2,1,1,1,1,1,1,0],
+        [0,1,1,2,1,1,1,1,1,1,1,2,1,1,1,0],
+        [1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1],
+        [1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1],
+        [0,1,1,1,2,1,1,1,1,1,1,1,2,1,1,0],
+        [0,1,1,1,1,1,1,2,1,1,1,1,1,1,1,0],
+        [0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+        [0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0],
+        [0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0]
+    ],
+    bug: [
+        [0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0],
+        [0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0],
+        [0,0,0,0,1,0,2,2,2,2,0,1,0,0,0,0],
+        [0,0,0,0,0,1,2,3,3,2,1,0,0,0,0,0],
+        [0,0,0,1,1,1,2,2,2,2,1,1,1,0,0,0],
+        [0,0,1,0,0,1,1,1,1,1,1,0,0,1,0,0],
+        [0,1,0,0,1,1,1,1,1,1,1,1,0,0,1,0],
+        [1,0,0,0,0,1,1,1,1,1,1,0,0,0,0,1],
+        [0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0],
+        [0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0]
+    ],
+    tire: [
+        [0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0],
+        [0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+        [0,1,1,1,1,0,0,0,0,0,0,1,1,1,1,0],
+        [0,1,1,1,0,0,2,2,2,2,0,0,1,1,1,0],
+        [1,1,1,0,0,2,2,2,2,2,2,0,0,1,1,1],
+        [1,1,0,0,2,2,2,0,0,2,2,2,0,0,1,1],
+        [1,1,0,0,2,2,0,0,0,0,2,2,0,0,1,1],
+        [1,1,0,0,2,2,0,0,0,0,2,2,0,0,1,1],
+        [1,1,0,0,2,2,2,0,0,2,2,2,0,0,1,1],
+        [1,1,1,0,0,2,2,2,2,2,2,0,0,1,1,1],
+        [0,1,1,1,0,0,2,2,2,2,0,0,1,1,1,0],
+        [0,1,1,1,1,0,0,0,0,0,0,1,1,1,1,0],
+        [0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+        [0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0]
+    ],
+    diamond: [
+        [0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,1,2,2,1,0,0,0,0,0,0],
+        [0,0,0,0,0,1,2,2,2,2,1,0,0,0,0,0],
+        [0,0,0,0,1,2,2,3,3,2,2,1,0,0,0,0],
+        [0,0,0,1,2,2,3,3,3,3,2,2,1,0,0,0],
+        [0,0,1,2,2,3,3,3,3,3,3,2,2,1,0,0],
+        [0,1,2,2,3,3,3,3,3,3,3,3,2,2,1,0],
+        [1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
+        [0,1,2,2,2,2,2,2,2,2,2,2,2,2,1,0],
+        [0,0,1,2,2,2,2,2,2,2,2,2,2,1,0,0],
+        [0,0,0,1,2,2,2,2,2,2,2,2,1,0,0,0],
+        [0,0,0,0,1,2,2,2,2,2,2,1,0,0,0,0],
+        [0,0,0,0,0,1,2,2,2,2,1,0,0,0,0,0],
+        [0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0]
+    ],
+    iron: [
+        [0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0],
+        [0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,0],
+        [0,0,0,0,0,0,1,1,2,2,2,1,1,1,1,0],
+        [0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,0],
+        [0,0,0,0,1,1,1,1,1,1,1,1,1,1,0,0],
+        [0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0],
+        [0,0,1,1,1,1,1,1,1,1,1,1,0,0,0,0],
+        [0,1,3,3,3,3,3,3,3,3,3,0,0,0,0,0],
+        [1,3,3,3,3,3,3,3,3,3,0,0,0,0,0,0],
+        [0,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0]
+    ],
+    bowtie: [
+        [1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1],
+        [1,1,1,0,0,0,0,0,0,0,0,0,0,1,1,1],
+        [0,1,1,1,0,0,0,0,0,0,0,0,1,1,1,0],
+        [0,0,1,1,1,0,0,0,0,0,0,1,1,1,0,0],
+        [0,0,0,1,1,1,0,0,0,0,1,1,1,0,0,0],
+        [0,0,0,0,1,1,1,2,2,1,1,1,0,0,0,0],
+        [0,0,0,0,1,1,1,2,2,1,1,1,0,0,0,0],
+        [0,0,0,1,1,1,0,0,0,0,1,1,1,0,0,0],
+        [0,0,1,1,1,0,0,0,0,0,0,1,1,1,0,0],
+        [0,1,1,1,0,0,0,0,0,0,0,0,1,1,1,0],
+        [1,1,1,0,0,0,0,0,0,0,0,0,0,1,1,1],
+        [1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1]
+    ],
+    dice: [
+        [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+        [1,1,1,2,2,1,1,1,1,1,1,2,2,1,1,1],
+        [1,1,1,2,2,1,1,1,1,1,1,2,2,1,1,1],
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+        [1,1,1,1,1,1,1,2,2,1,1,1,1,1,1,1],
+        [1,1,1,1,1,1,1,2,2,1,1,1,1,1,1,1],
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+        [1,1,1,2,2,1,1,1,1,1,1,2,2,1,1,1],
+        [1,1,1,2,2,1,1,1,1,1,1,2,2,1,1,1],
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+        [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0]
+    ]
+};
+
+// Color palettes for each sprite
+const SPRITE_COLORS = {
+    player: ['#2c8', '#5fb'],
+    hamburger: ['#e96', '#2b7', '#631', '#f22'],
+    cookie: ['#dcb', '#321'],
+    bug: ['#2d8', '#4ea', '#f44'],
+    tire: ['#444', '#777'],
+    diamond: ['#4cf', '#8ef', '#eff'],
+    iron: ['#bbc', '#448', '#667'],
+    bowtie: ['#f38', '#dd4'],
+    dice: ['#fff', '#222']
+};
+
 // Game Constants
 const GAME = {
     WIDTH: 160,
@@ -520,6 +659,34 @@ function checkCollisions() {
     }
 }
 
+// Sprite drawing helper
+function drawSprite(sprite, colors, x, y, alpha = 1) {
+    const pixelSize = scale * (16 / sprite[0].length); // Scale based on sprite width
+    
+    ctx.globalAlpha = alpha;
+    for (let row = 0; row < sprite.length; row++) {
+        for (let col = 0; col < sprite[row].length; col++) {
+            const colorIndex = sprite[row][col];
+            if (colorIndex > 0 && colorIndex <= colors.length) {
+                ctx.fillStyle = colors[colorIndex - 1];
+                ctx.fillRect(
+                    x * scale + col * pixelSize,
+                    y * scale + row * pixelSize,
+                    pixelSize,
+                    pixelSize
+                );
+            }
+        }
+    }
+    ctx.globalAlpha = 1;
+}
+
+// Get sprite for enemy type
+function getEnemySprite(type) {
+    const sprites = ['hamburger', 'cookie', 'bug', 'tire', 'diamond', 'iron', 'bowtie', 'dice'];
+    return sprites[type];
+}
+
 // Rendering
 function render() {
     // Clear
@@ -544,23 +711,41 @@ function render() {
     // Draw enemies
     gameState.enemies.forEach(enemy => {
         if (!enemy.isAlive) return;
-        ctx.fillStyle = enemy.typeData.color;
-        drawRect(enemy.x - GAME.ENEMY.WIDTH / 2, enemy.y - GAME.ENEMY.HEIGHT / 2, GAME.ENEMY.WIDTH, GAME.ENEMY.HEIGHT);
+        const spriteName = getEnemySprite(enemy.type);
+        const spriteData = SPRITES[spriteName];
+        const colors = SPRITE_COLORS[spriteName];
+        drawSprite(
+            spriteData,
+            colors,
+            enemy.x - GAME.ENEMY.WIDTH / 2,
+            enemy.y - GAME.ENEMY.HEIGHT / 2,
+            1
+        );
     });
     
-    // Draw projectiles
+    // Draw projectiles with glow
     gameState.projectiles.forEach(proj => {
-        ctx.fillStyle = proj.isPlayer ? '#ff4' : '#f44';
+        const color = proj.isPlayer ? '#ff4' : '#f44';
+        // Glow
+        ctx.fillStyle = color;
+        ctx.globalAlpha = 0.3;
+        drawRect(proj.x - GAME.PROJECTILE.WIDTH, proj.y - GAME.PROJECTILE.HEIGHT, GAME.PROJECTILE.WIDTH * 2, GAME.PROJECTILE.HEIGHT * 2);
+        ctx.globalAlpha = 1;
+        // Core
+        ctx.fillStyle = color;
         drawRect(proj.x - GAME.PROJECTILE.WIDTH / 2, proj.y - GAME.PROJECTILE.HEIGHT / 2, GAME.PROJECTILE.WIDTH, GAME.PROJECTILE.HEIGHT);
     });
     
     // Draw player
     if (gameState.player && gameState.phase !== 'respawning') {
         const flash = gameState.player.isInvulnerable && Math.sin(gameState.gameTime * 15) > 0;
-        ctx.globalAlpha = flash ? 0.3 : 1;
-        ctx.fillStyle = '#2c8';
-        drawRect(gameState.player.x - GAME.PLAYER.WIDTH / 2, gameState.player.y - GAME.PLAYER.HEIGHT / 2, GAME.PLAYER.WIDTH, GAME.PLAYER.HEIGHT);
-        ctx.globalAlpha = 1;
+        drawSprite(
+            SPRITES.player,
+            SPRITE_COLORS.player,
+            gameState.player.x - GAME.PLAYER.WIDTH / 2,
+            gameState.player.y - GAME.PLAYER.HEIGHT / 2,
+            flash ? 0.3 : 1
+        );
     }
     
     // Draw explosions

@@ -125,17 +125,67 @@ const SPRITES = {
     ]
 };
 
-// Color palettes for each sprite
+// Color palettes for each sprite (base/first cycle colors)
 const SPRITE_COLORS = {
     player: ['#2c8', '#5fb'],
-    hamburger: ['#e96', '#2b7', '#631', '#f22'],
-    cookie: ['#dcb', '#321'],
-    bug: ['#2d8', '#4ea', '#f44'],
-    tire: ['#444', '#777'],
-    diamond: ['#4cf', '#8ef', '#eff'],
-    iron: ['#bbc', '#448', '#667'],
-    bowtie: ['#f38', '#dd4'],
-    dice: ['#fff', '#222']
+    hamburger: ['#f8f0e0', '#2b7', '#8b4513', '#f22'],  // White/cream buns
+    cookie: ['#ffd700', '#321'],                         // Yellow/cream
+    bug: ['#e44', '#f88', '#f44'],                       // Red/pink
+    tire: ['#e44', '#f80'],                              // Red/orange
+    diamond: ['#2a8', '#4c9', '#8eb'],                   // Green/blue-green
+    iron: ['#a6c', '#648', '#86a'],                      // Purple/pink
+    bowtie: ['#48f', '#68f'],                            // Blue/purple
+    dice: ['#ffd700', '#222']                            // Always yellow
+};
+
+// MegaCycle color palettes - colors rotate after completing all 8 waves
+// Index 0 = cycle 1 (base colors above), Index 1+ = subsequent cycles
+const CYCLE_PALETTES = {
+    hamburger: [
+        ['#f8f0e0', '#2b7', '#8b4513', '#f22'],  // Cycle 1: White/cream
+        ['#a6c', '#648', '#86a', '#f22'],         // Cycle 2: Purple
+        ['#4c9', '#2a8', '#186', '#f22'],         // Cycle 3: Green
+        ['#4cf', '#28a', '#068', '#f22'],         // Cycle 4: Blue
+    ],
+    cookie: [
+        ['#ffd700', '#321'],  // Cycle 1: Yellow
+        ['#4c9', '#132'],     // Cycle 2: Green
+        ['#f8f0e0', '#321'],  // Cycle 3: White
+        ['#f88', '#422'],     // Cycle 4: Pink
+    ],
+    bug: [
+        ['#e44', '#f88', '#f44'],  // Cycle 1: Red
+        ['#4c9', '#8eb', '#4c9'],  // Cycle 2: Green
+        ['#48f', '#8af', '#48f'],  // Cycle 3: Blue
+        ['#fa4', '#fc8', '#fa4'],  // Cycle 4: Orange
+    ],
+    tire: [
+        ['#e44', '#f80'],  // Cycle 1: Red/orange
+        ['#48f', '#8af'],  // Cycle 2: Blue
+        ['#4c9', '#8eb'],  // Cycle 3: Green
+        ['#a6c', '#c8e'],  // Cycle 4: Purple
+    ],
+    diamond: [
+        ['#2a8', '#4c9', '#8eb'],  // Cycle 1: Green
+        ['#48f', '#6af', '#adf'],  // Cycle 2: Blue
+        ['#e44', '#f88', '#fcc'],  // Cycle 3: Red
+        ['#fa4', '#fc8', '#fea'],  // Cycle 4: Orange
+    ],
+    iron: [
+        ['#a6c', '#648', '#86a'],  // Cycle 1: Purple
+        ['#f88', '#a44', '#c66'],  // Cycle 2: Pink
+        ['#4c9', '#286', '#4a8'],  // Cycle 3: Green
+        ['#48f', '#248', '#46a'],  // Cycle 4: Blue
+    ],
+    bowtie: [
+        ['#48f', '#68f'],  // Cycle 1: Blue
+        ['#a6c', '#c8e'],  // Cycle 2: Purple
+        ['#4c9', '#8eb'],  // Cycle 3: Green
+        ['#f88', '#faa'],  // Cycle 4: Pink
+    ],
+    dice: [
+        ['#ffd700', '#222'],  // Always yellow - never changes
+    ]
 };
 
 // Game Constants
@@ -271,83 +321,286 @@ class Player {
     }
 }
 
-// Enemy class
+// Enemy class with row-based formation support
 class Enemy {
-    constructor(index, waveNumber) {
+    constructor(index, waveNumber, row = 0, col = 0, formationData = null) {
         this.type = (waveNumber - 1) % 8;
         this.typeData = ENEMY_TYPES[this.type];
-        const spacing = GAME.WIDTH / (GAME.ENEMY.COUNT + 1);
-        this.initialX = spacing * (index + 1);
-        this.initialY = 30;
+        this.waveNumber = waveNumber;
+        this.megaCycle = Math.floor((waveNumber - 1) / 8);  // Which MegaCycle we're in (0, 1, 2...)
+        
+        // Formation data
+        this.row = row;
+        this.col = col;
+        this.index = index;
+        this.formationData = formationData || {};
+        
+        // Position setup varies by enemy type
+        this.setupInitialPosition();
+        
         this.x = this.initialX;
         this.y = this.initialY;
-        this.phase = (index / GAME.ENEMY.COUNT) * Math.PI * 2;
         this.timeAlive = 0;
         this.isAlive = true;
-        this.speedMult = 1 + Math.floor((waveNumber - 1) / 8) * 0.25;
+        this.speedMult = 1 + this.megaCycle * 0.25;
+        
+        // Movement state
+        this.direction = 1;  // 1 = right, -1 = left
+        this.dipState = 0;   // For dip maneuvers
+        this.dipTimer = 0;
+        this.spinAngle = Math.random() * Math.PI * 2;  // For diamond spin
+        
+        // Dice-specific: random angle for diagonal movement in later cycles
+        this.diceAngle = (Math.random() - 0.5) * Math.PI / 3;  // Random angle ±30 degrees
+    }
+    
+    setupInitialPosition() {
+        const spacing = GAME.WIDTH / (GAME.ENEMY.COUNT + 1);
+        
+        switch (this.type) {
+            case 5: // Steam Irons - 3 vertical columns
+                const colSpacing = GAME.WIDTH / 4;
+                this.initialX = colSpacing * (this.col + 1);
+                this.initialY = -20 - this.row * 25;  // Stagger rows coming from top
+                break;
+            case 7: // Dice - random horizontal positions
+                this.initialX = 20 + Math.random() * (GAME.WIDTH - 40);
+                this.initialY = -20 - this.index * 40;  // Stagger drops
+                break;
+            default: // Row-based enemies
+                this.initialX = spacing * (this.col + 1);
+                this.initialY = 20 + this.row * 18;
+                break;
+        }
+        
+        // Set initial direction for alternating patterns
+        if (this.type === 3) { // Tires alternate by row
+            this.direction = (this.row % 2 === 0) ? 1 : -1;
+        } else {
+            this.direction = 1;
+        }
     }
     
     update(dt) {
         if (!this.isAlive) return;
         
         this.timeAlive += dt;
-        this.applyMovementPattern();
+        this.spinAngle += dt * 5;  // Spin animation for diamonds
+        this.applyMovementPattern(dt);
     }
     
-    applyMovementPattern() {
+    applyMovementPattern(dt) {
         const t = this.timeAlive;
-        const speed = GAME.ENEMY.BASE_SPEED * this.speedMult;
         
         switch (this.type) {
-            case 0: // Hamburgers - horizontal sweep
-                this.x = this.initialX + Math.sin(t * 2 + this.phase) * 40;
-                this.y = this.initialY + t * 8 * this.speedMult;
-                break;
-            case 1: // Cookies - zigzag
-                this.x = this.initialX + (Math.floor(t / 1.5) % 2 ? 1 : -1) * (t % 1.5) * 30;
-                this.y = this.initialY + t * 10 * this.speedMult;
-                break;
-            case 2: // Bugs - sine wave
-                this.x = this.initialX + Math.sin(t * 3 + this.phase) * 50;
-                this.y = this.initialY + t * 12 * this.speedMult;
-                break;
-            case 3: // Radial Tires - circular
-                this.x = this.initialX + Math.cos(t * 2.5 * this.speedMult + this.phase) * 30;
-                this.y = this.initialY + Math.sin(t * 2.5 * this.speedMult + this.phase) * 15 + t * 6 * this.speedMult;
-                break;
-            case 4: // Diamonds - diamond path
-                const phase = (t + this.phase / (Math.PI * 2)) % 2;
-                if (phase < 0.5) {
-                    this.x = this.initialX + phase * 4 * 40;
-                    this.y = this.initialY + phase * 4 * 20;
-                } else if (phase < 1.0) {
-                    this.x = this.initialX + (1 - (phase - 0.5) * 4) * 40;
-                    this.y = this.initialY + (1 - (phase - 0.5) * 4) * 20 + 20;
-                } else if (phase < 1.5) {
-                    this.x = this.initialX + (phase - 1.0) * 4 * -40;
-                    this.y = this.initialY + (1 - (phase - 1.0) * 4) * 20 + 20;
-                } else {
-                    this.x = this.initialX + (1 - (phase - 1.5) * 4) * -40;
-                    this.y = this.initialY + (phase - 1.5) * 4 * 20;
-                }
-                this.y += t * 5 * this.speedMult;
-                break;
-            case 5: // Steam Irons - fast horizontal
-                this.x = this.initialX + Math.sin(t * 4 + this.phase) * 60;
-                this.y = this.initialY + t * 5 * this.speedMult;
-                break;
-            case 6: // Bow Ties - figure 8
-                this.x = this.initialX + Math.sin(t * 2 + this.phase) * 45;
-                this.y = this.initialY + Math.sin((t * 2 + this.phase) * 2) * 15 + t * 8 * this.speedMult;
-                break;
-            case 7: // Dice - random jitter
-                this.x = this.initialX + Math.sin(t * 3 + this.phase) * 25 + (Math.random() - 0.5) * 20;
-                this.y = this.initialY + t * 10 * this.speedMult;
-                break;
+            case 0: this.moveHamburger(t, dt); break;
+            case 1: this.moveCookie(t, dt); break;
+            case 2: this.moveBug(t, dt); break;
+            case 3: this.moveTire(t, dt); break;
+            case 4: this.moveDiamond(t, dt); break;
+            case 5: this.moveIron(t, dt); break;
+            case 6: this.moveBowtie(t, dt); break;
+            case 7: this.moveDice(t, dt); break;
         }
         
-        // Clamp x
+        // Clamp x position
         this.x = Math.max(GAME.ENEMY.WIDTH / 2, Math.min(GAME.WIDTH - GAME.ENEMY.WIDTH / 2, this.x));
+    }
+    
+    // Hamburgers - horizontal streaming rows; pause/accelerate in later cycles
+    moveHamburger(t, dt) {
+        const baseSpeed = 50 * this.speedMult;
+        
+        if (this.megaCycle === 0) {
+            // Cycle 1: Constant streaming from side to side
+            this.x += this.direction * baseSpeed * dt;
+            
+            // Bounce off edges
+            if (this.x >= GAME.WIDTH - GAME.ENEMY.WIDTH / 2) {
+                this.x = GAME.WIDTH - GAME.ENEMY.WIDTH / 2;
+                this.direction = -1;
+            } else if (this.x <= GAME.ENEMY.WIDTH / 2) {
+                this.x = GAME.ENEMY.WIDTH / 2;
+                this.direction = 1;
+            }
+        } else {
+            // Later cycles: Pause and accelerate pattern
+            const cycleTime = t % 3.0;
+            if (cycleTime < 1.5) {
+                // Pause phase - slight drift
+                this.x += this.direction * 10 * dt;
+            } else {
+                // Accelerate phase - fast movement
+                this.x += this.direction * baseSpeed * 2.5 * dt;
+            }
+            
+            // Bounce off edges
+            if (this.x >= GAME.WIDTH - GAME.ENEMY.WIDTH / 2 || this.x <= GAME.ENEMY.WIDTH / 2) {
+                this.direction *= -1;
+                this.x = Math.max(GAME.ENEMY.WIDTH / 2, Math.min(GAME.WIDTH - GAME.ENEMY.WIDTH / 2, this.x));
+            }
+        }
+        
+        // Slow descent
+        this.y = this.initialY + t * 8 * this.speedMult;
+    }
+    
+    // Cookies - unison horizontal with periodic "dip" maneuver
+    moveCookie(t, dt) {
+        const baseSpeed = 40 * this.speedMult;
+        const dipInterval = this.megaCycle === 0 ? 2.5 : 1.8;  // Faster dips in later cycles
+        
+        // All cookies use shared direction from formation data
+        const sharedDir = this.formationData.direction || 1;
+        
+        // Check for dip timing
+        const dipPhase = t % dipInterval;
+        
+        if (dipPhase < 0.3) {
+            // Dip down
+            this.dipState = 1;
+            const dipProgress = dipPhase / 0.3;
+            const dipAmount = this.megaCycle === 0 ? 20 : 40;  // Dive-bomb in later cycles
+            this.y = this.initialY + t * 6 * this.speedMult + Math.sin(dipProgress * Math.PI) * dipAmount;
+        } else {
+            this.dipState = 0;
+            this.y = this.initialY + t * 6 * this.speedMult;
+        }
+        
+        // Horizontal movement (all move in unison)
+        this.x += sharedDir * baseSpeed * dt;
+        
+        // Update shared direction on edge hit
+        if (this.x >= GAME.WIDTH - GAME.ENEMY.WIDTH / 2 || this.x <= GAME.ENEMY.WIDTH / 2) {
+            this.formationData.direction = -sharedDir;
+            this.x = Math.max(GAME.ENEMY.WIDTH / 2, Math.min(GAME.WIDTH - GAME.ENEMY.WIDTH / 2, this.x));
+        }
+    }
+    
+    // Bugs - horizontal with undulating vertical bob
+    moveBug(t, dt) {
+        const baseSpeed = 45 * this.speedMult;
+        
+        // Horizontal movement
+        this.x += this.direction * baseSpeed * dt;
+        
+        // Bounce off edges
+        if (this.x >= GAME.WIDTH - GAME.ENEMY.WIDTH / 2 || this.x <= GAME.ENEMY.WIDTH / 2) {
+            this.direction *= -1;
+            this.x = Math.max(GAME.ENEMY.WIDTH / 2, Math.min(GAME.WIDTH - GAME.ENEMY.WIDTH / 2, this.x));
+        }
+        
+        // Undulating vertical bob while descending
+        const bobAmount = 8;
+        const bobSpeed = 4;
+        const baseY = this.initialY + t * 10 * this.speedMult;
+        this.y = baseY + Math.sin(t * bobSpeed + this.col * 0.5) * bobAmount;
+    }
+    
+    // Tires - alternating row directions with quick dangerous dip
+    moveTire(t, dt) {
+        const baseSpeed = 60 * this.speedMult;  // Faster than cookies
+        const dipInterval = 2.0;
+        
+        // Check for dip timing
+        const dipPhase = t % dipInterval;
+        
+        if (dipPhase < 0.2) {
+            // Quick dangerous dip
+            const dipProgress = dipPhase / 0.2;
+            const dipAmount = 30;
+            this.y = this.initialY + t * 8 * this.speedMult + Math.sin(dipProgress * Math.PI) * dipAmount;
+        } else {
+            this.y = this.initialY + t * 8 * this.speedMult;
+        }
+        
+        // Horizontal movement - alternating rows
+        this.x += this.direction * baseSpeed * dt;
+        
+        // Bounce off edges
+        if (this.x >= GAME.WIDTH - GAME.ENEMY.WIDTH / 2 || this.x <= GAME.ENEMY.WIDTH / 2) {
+            this.direction *= -1;
+            this.x = Math.max(GAME.ENEMY.WIDTH / 2, Math.min(GAME.WIDTH - GAME.ENEMY.WIDTH / 2, this.x));
+        }
+    }
+    
+    // Diamonds - horizontal with pronounced vertical wave + spinning animation
+    moveDiamond(t, dt) {
+        const baseSpeed = 35 * this.speedMult;
+        
+        // Horizontal movement
+        this.x += this.direction * baseSpeed * dt;
+        
+        // Bounce off edges
+        if (this.x >= GAME.WIDTH - GAME.ENEMY.WIDTH / 2 || this.x <= GAME.ENEMY.WIDTH / 2) {
+            this.direction *= -1;
+            this.x = Math.max(GAME.ENEMY.WIDTH / 2, Math.min(GAME.WIDTH - GAME.ENEMY.WIDTH / 2, this.x));
+        }
+        
+        // Pronounced vertical wave (bobbing)
+        const waveAmount = 15;
+        const waveSpeed = 3;
+        const baseY = this.initialY + t * 7 * this.speedMult;
+        this.y = baseY + Math.sin(t * waveSpeed + this.col * 0.8) * waveAmount;
+    }
+    
+    // Get diamond scale for spin animation (width changes)
+    getDiamondScale() {
+        return 0.5 + Math.abs(Math.cos(this.spinAngle)) * 0.5;
+    }
+    
+    // Steam Irons - 3 vertical columns descending with side-to-side wiggle
+    moveIron(t, dt) {
+        const wiggleAmount = 8;
+        const wiggleSpeed = 6;
+        const fallSpeed = 35 * this.speedMult;
+        
+        // Side-to-side wiggle
+        const baseX = this.initialX;
+        this.x = baseX + Math.sin(t * wiggleSpeed + this.row * 0.5) * wiggleAmount;
+        
+        // Descend vertically
+        this.y = this.initialY + t * fallSpeed;
+    }
+    
+    // Bow Ties - horizontal with dramatic swooping up/down motion
+    moveBowtie(t, dt) {
+        const baseSpeed = 40 * this.speedMult;
+        
+        // Horizontal movement
+        this.x += this.direction * baseSpeed * dt;
+        
+        // Bounce off edges
+        if (this.x >= GAME.WIDTH - GAME.ENEMY.WIDTH / 2 || this.x <= GAME.ENEMY.WIDTH / 2) {
+            this.direction *= -1;
+            this.x = Math.max(GAME.ENEMY.WIDTH / 2, Math.min(GAME.WIDTH - GAME.ENEMY.WIDTH / 2, this.x));
+        }
+        
+        // Dramatic swooping - large amplitude, slower frequency
+        const swoopAmount = 25;
+        const swoopSpeed = 2;
+        const baseY = this.initialY + t * 8 * this.speedMult;
+        this.y = baseY + Math.sin(t * swoopSpeed + this.col * 1.0) * swoopAmount;
+    }
+    
+    // Dice - straight vertical drop (cycle 1); erratic diagonal (later cycles)
+    moveDice(t, dt) {
+        const fallSpeed = 80 * this.speedMult;
+        
+        if (this.megaCycle === 0) {
+            // Cycle 1: Straight down with spin
+            this.y = this.initialY + t * fallSpeed;
+            // Slight random wobble for visual interest
+            this.x = this.initialX + Math.sin(t * 8) * 3;
+        } else {
+            // Later cycles: Erratic diagonal angles
+            this.y = this.initialY + t * fallSpeed;
+            this.x = this.initialX + Math.tan(this.diceAngle) * t * fallSpeed;
+            
+            // Wrap around horizontally for more chaos
+            if (this.x < 0) this.x += GAME.WIDTH;
+            if (this.x > GAME.WIDTH) this.x -= GAME.WIDTH;
+        }
     }
     
     getBounds() {
@@ -490,9 +743,40 @@ function startGame() {
 
 function startWave() {
     gameState.enemies = [];
-    for (let i = 0; i < GAME.ENEMY.COUNT; i++) {
-        gameState.enemies.push(new Enemy(i, gameState.waveNumber));
+    const type = (gameState.waveNumber - 1) % 8;
+    
+    // Shared formation data for coordinated movement
+    const formationData = { direction: 1 };
+    
+    switch (type) {
+        case 5: // Steam Irons - 3 vertical columns, 2 per column
+            for (let col = 0; col < 3; col++) {
+                for (let row = 0; row < 2; row++) {
+                    const index = col * 2 + row;
+                    gameState.enemies.push(new Enemy(index, gameState.waveNumber, row, col, formationData));
+                }
+            }
+            break;
+            
+        case 7: // Dice - scattered, random drops
+            for (let i = 0; i < GAME.ENEMY.COUNT; i++) {
+                gameState.enemies.push(new Enemy(i, gameState.waveNumber, 0, i, formationData));
+            }
+            break;
+            
+        default: // Row-based enemies (hamburgers, cookies, bugs, tires, diamonds, bowties)
+            const rowCount = 2;
+            const colCount = Math.ceil(GAME.ENEMY.COUNT / rowCount);
+            let index = 0;
+            for (let row = 0; row < rowCount; row++) {
+                for (let col = 0; col < colCount && index < GAME.ENEMY.COUNT; col++) {
+                    gameState.enemies.push(new Enemy(index, gameState.waveNumber, row, col, formationData));
+                    index++;
+                }
+            }
+            break;
     }
+    
     gameState.energy = GAME.ENERGY.MAX;
     gameState.projectiles = [];
     gameState.phase = 'waveTransition';
@@ -681,10 +965,53 @@ function drawSprite(sprite, colors, x, y, alpha = 1) {
     ctx.globalAlpha = 1;
 }
 
+// Sprite drawing with scale (for diamond spin animation)
+function drawSpriteScaled(sprite, colors, x, y, scaleX, scaleY, alpha = 1) {
+    const basePixelSize = scale * (16 / sprite[0].length);
+    const pixelWidth = basePixelSize * scaleX;
+    const pixelHeight = basePixelSize * scaleY;
+    
+    ctx.globalAlpha = alpha;
+    for (let row = 0; row < sprite.length; row++) {
+        for (let col = 0; col < sprite[row].length; col++) {
+            const colorIndex = sprite[row][col];
+            if (colorIndex > 0 && colorIndex <= colors.length) {
+                ctx.fillStyle = colors[colorIndex - 1];
+                ctx.fillRect(
+                    x * scale + col * pixelWidth,
+                    y * scale + row * pixelHeight,
+                    pixelWidth,
+                    pixelHeight
+                );
+            }
+        }
+    }
+    ctx.globalAlpha = 1;
+}
+
 // Get sprite for enemy type
 function getEnemySprite(type) {
     const sprites = ['hamburger', 'cookie', 'bug', 'tire', 'diamond', 'iron', 'bowtie', 'dice'];
     return sprites[type];
+}
+
+// Get colors for enemy based on MegaCycle
+function getEnemyColors(enemy) {
+    const spriteName = getEnemySprite(enemy.type);
+    const palettes = CYCLE_PALETTES[spriteName];
+    
+    if (!palettes || palettes.length === 0) {
+        return SPRITE_COLORS[spriteName];
+    }
+    
+    // Dice always uses cycle 0 colors (always yellow)
+    if (enemy.type === 7) {
+        return palettes[0];
+    }
+    
+    // Get color palette based on MegaCycle, cycling through available palettes
+    const paletteIndex = enemy.megaCycle % palettes.length;
+    return palettes[paletteIndex];
 }
 
 // Rendering
@@ -713,14 +1040,29 @@ function render() {
         if (!enemy.isAlive) return;
         const spriteName = getEnemySprite(enemy.type);
         const spriteData = SPRITES[spriteName];
-        const colors = SPRITE_COLORS[spriteName];
-        drawSprite(
-            spriteData,
-            colors,
-            enemy.x - GAME.ENEMY.WIDTH / 2,
-            enemy.y - GAME.ENEMY.HEIGHT / 2,
-            1
-        );
+        const colors = getEnemyColors(enemy);
+        
+        // Special handling for diamonds - spin animation affects width
+        if (enemy.type === 4) {
+            const diamondScale = enemy.getDiamondScale();
+            drawSpriteScaled(
+                spriteData,
+                colors,
+                enemy.x - (GAME.ENEMY.WIDTH * diamondScale) / 2,
+                enemy.y - GAME.ENEMY.HEIGHT / 2,
+                diamondScale,
+                1,
+                1
+            );
+        } else {
+            drawSprite(
+                spriteData,
+                colors,
+                enemy.x - GAME.ENEMY.WIDTH / 2,
+                enemy.y - GAME.ENEMY.HEIGHT / 2,
+                1
+            );
+        }
     });
     
     // Draw projectiles with glow

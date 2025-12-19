@@ -125,66 +125,67 @@ const SPRITES = {
     ]
 };
 
-// Color palettes for each sprite (base/first cycle colors)
+// Authentic Atari 2600 color palettes for each sprite
+// Based on the original 1982 Activision game
 const SPRITE_COLORS = {
-    player: ['#2c8', '#5fb'],
-    hamburger: ['#f8f0e0', '#2b7', '#8b4513', '#f22'],  // White/cream buns
-    cookie: ['#ffd700', '#321'],                         // Yellow/cream
-    bug: ['#e44', '#f88', '#f44'],                       // Red/pink
-    tire: ['#e44', '#f80'],                              // Red/orange
-    diamond: ['#2a8', '#4c9', '#8eb'],                   // Green/blue-green
-    iron: ['#a6c', '#648', '#86a'],                      // Purple/pink
-    bowtie: ['#48f', '#68f'],                            // Blue/purple
-    dice: ['#ffd700', '#222']                            // Always yellow
+    player: ['#5588ff', '#88aaff'],                      // Blue blaster
+    hamburger: ['#ff88aa', '#cc4466', '#884422', '#ff4444'],  // Pink (cycle 1)
+    cookie: ['#ffdd44', '#886622'],                       // Yellow (cycle 1)
+    bug: ['#44cc66', '#66ee88', '#44cc66'],               // Green (cycle 1)
+    tire: ['#ff88aa', '#cc4466'],                         // Pink (cycle 1)
+    diamond: ['#44cc66', '#66ee88', '#aaffcc'],           // Green (cycle 1)
+    iron: ['#ffdd44', '#ccaa22', '#aa8800'],              // Yellow (cycle 1)
+    bowtie: ['#ff8844', '#ffaa66'],                       // Orange (cycle 1)
+    dice: ['#ffdd44', '#222222']                          // Always yellow
 };
 
 // MegaCycle color palettes - colors rotate after completing all 8 waves
-// Index 0 = cycle 1 (base colors above), Index 1+ = subsequent cycles
+// Based on authentic Atari 2600 appearance: colors alternate odd/even cycles
 const CYCLE_PALETTES = {
     hamburger: [
-        ['#f8f0e0', '#2b7', '#8b4513', '#f22'],  // Cycle 1: White/cream
-        ['#a6c', '#648', '#86a', '#f22'],         // Cycle 2: Purple
-        ['#4c9', '#2a8', '#186', '#f22'],         // Cycle 3: Green
-        ['#4cf', '#28a', '#068', '#f22'],         // Cycle 4: Blue
+        ['#ff88aa', '#cc4466', '#884422', '#ff4444'],    // Cycle 1 (odd): Pink
+        ['#44cc66', '#228844', '#115522', '#ff4444'],    // Cycle 2 (even): Green
+        ['#ff88aa', '#cc4466', '#884422', '#ff4444'],    // Cycle 3 (odd): Pink
+        ['#44cc66', '#228844', '#115522', '#ff4444'],    // Cycle 4 (even): Green
     ],
     cookie: [
-        ['#ffd700', '#321'],  // Cycle 1: Yellow
-        ['#4c9', '#132'],     // Cycle 2: Green
-        ['#f8f0e0', '#321'],  // Cycle 3: White
-        ['#f88', '#422'],     // Cycle 4: Pink
+        ['#ffdd44', '#886622'],    // Cycle 1 (odd): Yellow
+        ['#ff8844', '#884422'],    // Cycle 2 (even): Orange
+        ['#ffdd44', '#886622'],    // Cycle 3 (odd): Yellow
+        ['#ff8844', '#884422'],    // Cycle 4 (even): Orange
     ],
     bug: [
-        ['#e44', '#f88', '#f44'],  // Cycle 1: Red
-        ['#4c9', '#8eb', '#4c9'],  // Cycle 2: Green
-        ['#48f', '#8af', '#48f'],  // Cycle 3: Blue
-        ['#fa4', '#fc8', '#fa4'],  // Cycle 4: Orange
+        ['#44cc66', '#66ee88', '#44cc66'],    // Cycle 1 (odd): Green
+        ['#ff88aa', '#ffaacc', '#ff88aa'],    // Cycle 2 (even): Pink
+        ['#44cc66', '#66ee88', '#44cc66'],    // Cycle 3 (odd): Green
+        ['#ff88aa', '#ffaacc', '#ff88aa'],    // Cycle 4 (even): Pink
     ],
     tire: [
-        ['#e44', '#f80'],  // Cycle 1: Red/orange
-        ['#48f', '#8af'],  // Cycle 2: Blue
-        ['#4c9', '#8eb'],  // Cycle 3: Green
-        ['#a6c', '#c8e'],  // Cycle 4: Purple
+        ['#ff88aa', '#cc4466'],    // Cycle 1 (odd): Pink
+        ['#44cc66', '#228844'],    // Cycle 2 (even): Green
+        ['#ff88aa', '#cc4466'],    // Cycle 3 (odd): Pink
+        ['#44cc66', '#228844'],    // Cycle 4 (even): Green
     ],
     diamond: [
-        ['#2a8', '#4c9', '#8eb'],  // Cycle 1: Green
-        ['#48f', '#6af', '#adf'],  // Cycle 2: Blue
-        ['#e44', '#f88', '#fcc'],  // Cycle 3: Red
-        ['#fa4', '#fc8', '#fea'],  // Cycle 4: Orange
+        ['#44cc66', '#66ee88', '#aaffcc'],    // Cycle 1 (odd): Green
+        ['#ffdd44', '#ffee66', '#ffffaa'],    // Cycle 2 (even): Yellow
+        ['#44cc66', '#66ee88', '#aaffcc'],    // Cycle 3 (odd): Green
+        ['#ffdd44', '#ffee66', '#ffffaa'],    // Cycle 4 (even): Yellow
     ],
     iron: [
-        ['#a6c', '#648', '#86a'],  // Cycle 1: Purple
-        ['#f88', '#a44', '#c66'],  // Cycle 2: Pink
-        ['#4c9', '#286', '#4a8'],  // Cycle 3: Green
-        ['#48f', '#248', '#46a'],  // Cycle 4: Blue
+        ['#ffdd44', '#ccaa22', '#aa8800'],    // Cycle 1 (odd): Yellow
+        ['#ff88aa', '#cc4466', '#aa2244'],    // Cycle 2 (even): Pink
+        ['#ffdd44', '#ccaa22', '#aa8800'],    // Cycle 3 (odd): Yellow
+        ['#ff88aa', '#cc4466', '#aa2244'],    // Cycle 4 (even): Pink
     ],
     bowtie: [
-        ['#48f', '#68f'],  // Cycle 1: Blue
-        ['#a6c', '#c8e'],  // Cycle 2: Purple
-        ['#4c9', '#8eb'],  // Cycle 3: Green
-        ['#f88', '#faa'],  // Cycle 4: Pink
+        ['#ff8844', '#ffaa66'],    // Cycle 1 (odd): Orange
+        ['#44cc66', '#66ee88'],    // Cycle 2 (even): Green
+        ['#ff8844', '#ffaa66'],    // Cycle 3 (odd): Orange
+        ['#44cc66', '#66ee88'],    // Cycle 4 (even): Green
     ],
     dice: [
-        ['#ffd700', '#222'],  // Always yellow - never changes
+        ['#ffdd44', '#222222'],    // Always yellow - never changes
     ]
 };
 
@@ -225,21 +226,34 @@ const GAME = {
     },
     
     SCORE: {
-        BASE_PER_ENEMY: 100,
         WAVE_BONUS: 500
     }
 };
 
-// Enemy Types
+// Authentic Atari 2600 point values per enemy type
+// Index corresponds to enemy type (0-7)
+// First cycle uses firstCycle value, subsequent cycles use laterCycles value
+const ENEMY_POINTS = [
+    { firstCycle: 20, laterCycles: 90 },   // 0: Hamburger
+    { firstCycle: 30, laterCycles: 90 },   // 1: Cookie
+    { firstCycle: 40, laterCycles: 90 },   // 2: Bug
+    { firstCycle: 50, laterCycles: 90 },   // 3: Radial Tire
+    { firstCycle: 60, laterCycles: 90 },   // 4: Diamond
+    { firstCycle: 70, laterCycles: 90 },   // 5: Steam Iron
+    { firstCycle: 80, laterCycles: 90 },   // 6: Bow Tie
+    { firstCycle: 90, laterCycles: 90 }    // 7: Space Dice (always 90)
+];
+
+// Enemy Types - Names and display colors matching Atari 2600 wave announcements
 const ENEMY_TYPES = [
-    { name: 'HAMBURGERS', color: '#e96' },
-    { name: 'COOKIES', color: '#dcb' },
-    { name: 'BUGS', color: '#2d8' },
-    { name: 'RADIAL TIRES', color: '#555' },
-    { name: 'DIAMONDS', color: '#4cf' },
-    { name: 'STEAM IRONS', color: '#bbc' },
-    { name: 'BOW TIES', color: '#f38' },
-    { name: 'DICE', color: '#fff' }
+    { name: 'HAMBURGERS', color: '#ff88aa' },      // Pink
+    { name: 'COOKIES', color: '#ffdd44' },          // Yellow
+    { name: 'BUGS', color: '#44cc66' },             // Green
+    { name: 'RADIAL TIRES', color: '#ff88aa' },    // Pink
+    { name: 'DIAMONDS', color: '#44cc66' },         // Green
+    { name: 'STEAM IRONS', color: '#ffdd44' },      // Yellow
+    { name: 'BOW TIES', color: '#ff8844' },         // Orange
+    { name: 'SPACE DICE', color: '#ffdd44' }        // Yellow (renamed to match original)
 ];
 
 // Game State
@@ -913,7 +927,10 @@ function checkCollisions() {
                 proj.isActive = false;
                 enemy.isAlive = false;
                 gameState.explosions.push(new Explosion(enemy.x, enemy.y));
-                gameState.score += GAME.SCORE.BASE_PER_ENEMY + enemy.type * 20;
+                // Authentic Atari 2600 scoring: different points for first cycle vs later cycles
+                const pointData = ENEMY_POINTS[enemy.type];
+                const points = enemy.megaCycle === 0 ? pointData.firstCycle : pointData.laterCycles;
+                gameState.score += points;
                 gameState.energy = Math.min(gameState.energy + GAME.ENERGY.RESTORE_PER_KILL, GAME.ENERGY.MAX);
                 playSound('explosion');
             }

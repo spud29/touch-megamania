@@ -202,15 +202,15 @@ const CYCLE_PALETTES = {
 
 // Sprite image paths for loading actual image files
 const SPRITE_PATHS = {
-    player: 'sprites/player.png',
-    hamburger: 'sprites/hamburger.png',
-    cookie: 'sprites/cookie.png',
-    bug: 'sprites/bug.png',
-    tire: 'sprites/tire.png',
-    diamond: 'sprites/diamond.png',
-    iron: 'sprites/iron.png',
-    bowtie: 'sprites/bowtie.png',
-    dice: 'sprites/dice.png'
+    player: 'sprites/player.webp',
+    hamburger: 'sprites/hamburger.webp',
+    cookie: 'sprites/cookie.webp',
+    bug: 'sprites/bug.webp',
+    tire: 'sprites/tire.webp',
+    diamond: 'sprites/diamond.webp',
+    iron: 'sprites/iron.webp',
+    bowtie: 'sprites/bowtie.webp',
+    dice: 'sprites/dice.webp'
 };
 
 // Loaded sprite images will be stored here
@@ -982,8 +982,14 @@ function drawSprite(sprite, colors, x, y, alpha = 1, spriteName = null) {
     // Use image sprite if available
     if (spriteName && SPRITE_IMAGES[spriteName]) {
         const img = SPRITE_IMAGES[spriteName];
-        const drawWidth = 16 * scale;
-        const drawHeight = (img.height / img.width) * 16 * scale;
+        // Disable smoothing for crisp pixel art
+        ctx.imageSmoothingEnabled = false;
+        
+        // Draw at game's expected enemy/player size
+        const isPlayer = (spriteName === 'player');
+        const drawWidth = (isPlayer ? GAME.PLAYER.WIDTH : GAME.ENEMY.WIDTH) * scale;
+        const drawHeight = (isPlayer ? GAME.PLAYER.HEIGHT : GAME.ENEMY.HEIGHT) * scale;
+        
         ctx.drawImage(img, x * scale, y * scale, drawWidth, drawHeight);
         ctx.globalAlpha = 1;
         return;
@@ -1015,8 +1021,12 @@ function drawSpriteScaled(sprite, colors, x, y, scaleX, scaleY, alpha = 1, sprit
     // Use image sprite if available
     if (spriteName && SPRITE_IMAGES[spriteName]) {
         const img = SPRITE_IMAGES[spriteName];
-        const drawWidth = 16 * scale * scaleX;
-        const drawHeight = (img.height / img.width) * 16 * scale * scaleY;
+        // Disable smoothing for crisp pixel art
+        ctx.imageSmoothingEnabled = false;
+        
+        const drawWidth = GAME.ENEMY.WIDTH * scale * scaleX;
+        const drawHeight = GAME.ENEMY.HEIGHT * scale * scaleY;
+        
         ctx.drawImage(img, x * scale, y * scale, drawWidth, drawHeight);
         ctx.globalAlpha = 1;
         return;

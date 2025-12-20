@@ -471,16 +471,20 @@ class Enemy {
             this.x -= GAME.WIDTH + GAME.ENEMY.WIDTH;
         }
         
-        // Vertical wrapping - enemies that go off bottom appear at top
-        if (this.y > GAME.HEIGHT + GAME.ENEMY.HEIGHT) {
-            this.y -= GAME.HEIGHT + GAME.ENEMY.HEIGHT * 2;
+        // Vertical wrapping - enemies wrap BEFORE reaching player area
+        // Player is at Y=170, so wrap enemies at Y=155 (just above player zone)
+        const wrapBottomThreshold = GAME.PLAYER.Y - GAME.PLAYER.HEIGHT - GAME.ENEMY.HEIGHT;
+        const wrapAmount = GAME.HEIGHT + GAME.ENEMY.HEIGHT * 2;
+        
+        if (this.y > wrapBottomThreshold) {
+            this.y -= wrapAmount;
             // Reset initial Y for enemies that use it in their movement calculations
-            this.initialY -= GAME.HEIGHT + GAME.ENEMY.HEIGHT * 2;
+            this.initialY -= wrapAmount;
         }
-        // Enemies that go off top appear at bottom
-        if (this.y < -GAME.ENEMY.HEIGHT) {
-            this.y += GAME.HEIGHT + GAME.ENEMY.HEIGHT * 2;
-            this.initialY += GAME.HEIGHT + GAME.ENEMY.HEIGHT * 2;
+        // Enemies that go off top appear at bottom (rarely needed but for completeness)
+        if (this.y < -GAME.ENEMY.HEIGHT * 2) {
+            this.y += wrapAmount;
+            this.initialY += wrapAmount;
         }
     }
     

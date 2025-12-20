@@ -260,7 +260,7 @@ const GAME = {
     ENEMY: {
         WIDTH: 16,
         HEIGHT: 12,
-        COUNT: 6,
+        COUNT: 4,
         BASE_SPEED: 60,
         FIRE_CHANCE: 0.005
     },
@@ -415,24 +415,22 @@ class Enemy {
     }
     
     setupInitialPosition() {
-        // Calculate columns based on 2 rows
-        const rowCount = 2;
-        const colCount = Math.ceil(GAME.ENEMY.COUNT / rowCount);
-        const colSpacing = GAME.WIDTH / (colCount + 1);
+        // Space enemies evenly across the screen
+        const colSpacing = GAME.WIDTH / (GAME.ENEMY.COUNT + 1);
         
         switch (this.type) {
-            case 5: // Steam Irons - 3 vertical columns
-                const ironColSpacing = GAME.WIDTH / 4;
+            case 5: // Steam Irons - 2 vertical columns
+                const ironColSpacing = GAME.WIDTH / 3;
                 this.initialX = ironColSpacing * (this.col + 1);
-                this.initialY = -20 - this.row * 35;  // Stagger rows coming from top
+                this.initialY = -20 - this.row * 40;
                 break;
             case 7: // Dice - random horizontal positions
                 this.initialX = 20 + Math.random() * (GAME.WIDTH - 40);
-                this.initialY = -20 - this.index * 50;  // Stagger drops
+                this.initialY = -20 - this.index * 60;
                 break;
-            default: // Row-based enemies
+            default: // Row-based enemies - single row
                 this.initialX = colSpacing * (this.col + 1);
-                this.initialY = 20 + this.row * 28;
+                this.initialY = 30;
                 break;
         }
         
@@ -785,8 +783,8 @@ function startWave() {
     const formationData = { direction: 1 };
     
     switch (type) {
-        case 5: // Steam Irons - 3 vertical columns, 2 per column
-            for (let col = 0; col < 3; col++) {
+        case 5: // Steam Irons - 2 vertical columns, 2 per column
+            for (let col = 0; col < 2; col++) {
                 for (let row = 0; row < 2; row++) {
                     const index = col * 2 + row;
                     gameState.enemies.push(new Enemy(index, gameState.waveNumber, row, col, formationData));
@@ -801,14 +799,9 @@ function startWave() {
             break;
             
         default: // Row-based enemies (hamburgers, cookies, bugs, tires, diamonds, bowties)
-            const rowCount = 2;
-            const colCount = Math.ceil(GAME.ENEMY.COUNT / rowCount);
-            let index = 0;
-            for (let row = 0; row < rowCount; row++) {
-                for (let col = 0; col < colCount && index < GAME.ENEMY.COUNT; col++) {
-                    gameState.enemies.push(new Enemy(index, gameState.waveNumber, row, col, formationData));
-                    index++;
-                }
+            // Single row formation for better spacing
+            for (let i = 0; i < GAME.ENEMY.COUNT; i++) {
+                gameState.enemies.push(new Enemy(i, gameState.waveNumber, 0, i, formationData));
             }
             break;
     }

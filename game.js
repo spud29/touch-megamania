@@ -260,7 +260,7 @@ const GAME = {
     ENEMY: {
         WIDTH: 16,
         HEIGHT: 12,
-        COUNT: 12,
+        COUNT: 6,
         BASE_SPEED: 60,
         FIRE_CHANCE: 0.005
     },
@@ -415,21 +415,24 @@ class Enemy {
     }
     
     setupInitialPosition() {
-        const spacing = GAME.WIDTH / (GAME.ENEMY.COUNT + 1);
+        // Calculate columns based on 2 rows
+        const rowCount = 2;
+        const colCount = Math.ceil(GAME.ENEMY.COUNT / rowCount);
+        const colSpacing = GAME.WIDTH / (colCount + 1);
         
         switch (this.type) {
             case 5: // Steam Irons - 3 vertical columns
-                const colSpacing = GAME.WIDTH / 4;
-                this.initialX = colSpacing * (this.col + 1);
-                this.initialY = -20 - this.row * 25;  // Stagger rows coming from top
+                const ironColSpacing = GAME.WIDTH / 4;
+                this.initialX = ironColSpacing * (this.col + 1);
+                this.initialY = -20 - this.row * 35;  // Stagger rows coming from top
                 break;
             case 7: // Dice - random horizontal positions
                 this.initialX = 20 + Math.random() * (GAME.WIDTH - 40);
-                this.initialY = -20 - this.index * 40;  // Stagger drops
+                this.initialY = -20 - this.index * 50;  // Stagger drops
                 break;
             default: // Row-based enemies
-                this.initialX = spacing * (this.col + 1);
-                this.initialY = 20 + this.row * 18;
+                this.initialX = colSpacing * (this.col + 1);
+                this.initialY = 20 + this.row * 28;
                 break;
         }
         
@@ -782,10 +785,10 @@ function startWave() {
     const formationData = { direction: 1 };
     
     switch (type) {
-        case 5: // Steam Irons - 3 vertical columns, 4 per column
+        case 5: // Steam Irons - 3 vertical columns, 2 per column
             for (let col = 0; col < 3; col++) {
-                for (let row = 0; row < 4; row++) {
-                    const index = col * 4 + row;
+                for (let row = 0; row < 2; row++) {
+                    const index = col * 2 + row;
                     gameState.enemies.push(new Enemy(index, gameState.waveNumber, row, col, formationData));
                 }
             }

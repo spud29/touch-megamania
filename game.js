@@ -200,6 +200,41 @@ const CYCLE_PALETTES = {
     ]
 };
 
+// Sprite image paths for loading actual image files
+const SPRITE_PATHS = {
+    player: 'sprites/player.png',
+    hamburger: 'sprites/hamburger.png',
+    cookie: 'sprites/cookie.png',
+    bug: 'sprites/bug.png',
+    tire: 'sprites/tire.png',
+    diamond: 'sprites/diamond.png',
+    iron: 'sprites/iron.png',
+    bowtie: 'sprites/bowtie.png',
+    dice: 'sprites/dice.png'
+};
+
+// Loaded sprite images will be stored here
+const SPRITE_IMAGES = {};
+
+// Load all sprite images - returns a Promise that resolves when all images are loaded
+function loadSprites() {
+    const promises = Object.entries(SPRITE_PATHS).map(([name, path]) => {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => {
+                SPRITE_IMAGES[name] = img;
+                resolve();
+            };
+            img.onerror = () => {
+                console.warn(`Failed to load sprite: ${path}`);
+                resolve(); // Resolve anyway to allow fallback to pixel sprites
+            };
+            img.src = path;
+        });
+    });
+    return Promise.all(promises);
+}
+
 // Game Constants
 const GAME = {
     WIDTH: 160,
@@ -225,7 +260,7 @@ const GAME = {
     ENEMY: {
         WIDTH: 16,
         HEIGHT: 12,
-        COUNT: 6,
+        COUNT: 12,
         BASE_SPEED: 60,
         FIRE_CHANCE: 0.005
     },
@@ -428,8 +463,25 @@ class Enemy {
             case 7: this.moveDice(t, dt); break;
         }
         
-        // Clamp x position
-        this.x = Math.max(GAME.ENEMY.WIDTH / 2, Math.min(GAME.WIDTH - GAME.ENEMY.WIDTH / 2, this.x));
+        // Wrap around screen edges (like original Megamania)
+        // Horizontal wrapping
+        if (this.x < -GAME.ENEMY.WIDTH / 2) {
+            this.x += GAME.WIDTH + GAME.ENEMY.WIDTH;
+        } else if (this.x > GAME.WIDTH + GAME.ENEMY.WIDTH / 2) {
+            this.x -= GAME.WIDTH + GAME.ENEMY.WIDTH;
+        }
+        
+        // Vertical wrapping - enemies that go off bottom appear at top
+        if (this.y > GAME.HEIGHT + GAME.ENEMY.HEIGHT) {
+            this.y -= GAME.HEIGHT + GAME.ENEMY.HEIGHT * 2;
+            // Reset initial Y for enemies that use it in their movement calculations
+            this.initialY -= GAME.HEIGHT + GAME.ENEMY.HEIGHT * 2;
+        }
+        // Enemies that go off top appear at bottom
+        if (this.y < -GAME.ENEMY.HEIGHT) {
+            this.y += GAME.HEIGHT + GAME.ENEMY.HEIGHT * 2;
+            this.initialY += GAME.HEIGHT + GAME.ENEMY.HEIGHT * 2;
+        }
     }
     
     // Hamburgers - horizontal streaming rows; pause/accelerate in later cycles
@@ -437,17 +489,8 @@ class Enemy {
         const baseSpeed = 50 * this.speedMult;
         
         if (this.megaCycle === 0) {
-            // Cycle 1: Constant streaming from side to side
+            // Cycle 1: Constant streaming - wraps around screen edges
             this.x += this.direction * baseSpeed * dt;
-            
-            // Bounce off edges
-            if (this.x >= GAME.WIDTH - GAME.ENEMY.WIDTH / 2) {
-                this.x = GAME.WIDTH - GAME.ENEMY.WIDTH / 2;
-                this.direction = -1;
-            } else if (this.x <= GAME.ENEMY.WIDTH / 2) {
-                this.x = GAME.ENEMY.WIDTH / 2;
-                this.direction = 1;
-            }
         } else {
             // Later cycles: Pause and accelerate pattern
             const cycleTime = t % 3.0;
@@ -457,12 +500,6 @@ class Enemy {
             } else {
                 // Accelerate phase - fast movement
                 this.x += this.direction * baseSpeed * 2.5 * dt;
-            }
-            
-            // Bounce off edges
-            if (this.x >= GAME.WIDTH - GAME.ENEMY.WIDTH / 2 || this.x <= GAME.ENEMY.WIDTH / 2) {
-                this.direction *= -1;
-                this.x = Math.max(GAME.ENEMY.WIDTH / 2, Math.min(GAME.WIDTH - GAME.ENEMY.WIDTH / 2, this.x));
             }
         }
         
@@ -492,28 +529,16 @@ class Enemy {
             this.y = this.initialY + t * 6 * this.speedMult;
         }
         
-        // Horizontal movement (all move in unison)
+        // Horizontal movement (all move in unison) - wraps around screen edges
         this.x += sharedDir * baseSpeed * dt;
-        
-        // Update shared direction on edge hit
-        if (this.x >= GAME.WIDTH - GAME.ENEMY.WIDTH / 2 || this.x <= GAME.ENEMY.WIDTH / 2) {
-            this.formationData.direction = -sharedDir;
-            this.x = Math.max(GAME.ENEMY.WIDTH / 2, Math.min(GAME.WIDTH - GAME.ENEMY.WIDTH / 2, this.x));
-        }
     }
     
     // Bugs - horizontal with undulating vertical bob
     moveBug(t, dt) {
         const baseSpeed = 45 * this.speedMult;
         
-        // Horizontal movement
+        // Horizontal movement - wraps around screen edges
         this.x += this.direction * baseSpeed * dt;
-        
-        // Bounce off edges
-        if (this.x >= GAME.WIDTH - GAME.ENEMY.WIDTH / 2 || this.x <= GAME.ENEMY.WIDTH / 2) {
-            this.direction *= -1;
-            this.x = Math.max(GAME.ENEMY.WIDTH / 2, Math.min(GAME.WIDTH - GAME.ENEMY.WIDTH / 2, this.x));
-        }
         
         // Undulating vertical bob while descending
         const bobAmount = 8;
@@ -539,28 +564,16 @@ class Enemy {
             this.y = this.initialY + t * 8 * this.speedMult;
         }
         
-        // Horizontal movement - alternating rows
+        // Horizontal movement - alternating rows, wraps around screen edges
         this.x += this.direction * baseSpeed * dt;
-        
-        // Bounce off edges
-        if (this.x >= GAME.WIDTH - GAME.ENEMY.WIDTH / 2 || this.x <= GAME.ENEMY.WIDTH / 2) {
-            this.direction *= -1;
-            this.x = Math.max(GAME.ENEMY.WIDTH / 2, Math.min(GAME.WIDTH - GAME.ENEMY.WIDTH / 2, this.x));
-        }
     }
     
     // Diamonds - horizontal with pronounced vertical wave + spinning animation
     moveDiamond(t, dt) {
         const baseSpeed = 35 * this.speedMult;
         
-        // Horizontal movement
+        // Horizontal movement - wraps around screen edges
         this.x += this.direction * baseSpeed * dt;
-        
-        // Bounce off edges
-        if (this.x >= GAME.WIDTH - GAME.ENEMY.WIDTH / 2 || this.x <= GAME.ENEMY.WIDTH / 2) {
-            this.direction *= -1;
-            this.x = Math.max(GAME.ENEMY.WIDTH / 2, Math.min(GAME.WIDTH - GAME.ENEMY.WIDTH / 2, this.x));
-        }
         
         // Pronounced vertical wave (bobbing)
         const waveAmount = 15;
@@ -592,14 +605,8 @@ class Enemy {
     moveBowtie(t, dt) {
         const baseSpeed = 40 * this.speedMult;
         
-        // Horizontal movement
+        // Horizontal movement - wraps around screen edges
         this.x += this.direction * baseSpeed * dt;
-        
-        // Bounce off edges
-        if (this.x >= GAME.WIDTH - GAME.ENEMY.WIDTH / 2 || this.x <= GAME.ENEMY.WIDTH / 2) {
-            this.direction *= -1;
-            this.x = Math.max(GAME.ENEMY.WIDTH / 2, Math.min(GAME.WIDTH - GAME.ENEMY.WIDTH / 2, this.x));
-        }
         
         // Dramatic swooping - large amplitude, slower frequency
         const swoopAmount = 25;
@@ -621,10 +628,7 @@ class Enemy {
             // Later cycles: Erratic diagonal angles
             this.y = this.initialY + t * fallSpeed;
             this.x = this.initialX + Math.tan(this.diceAngle) * t * fallSpeed;
-            
-            // Wrap around horizontally for more chaos
-            if (this.x < 0) this.x += GAME.WIDTH;
-            if (this.x > GAME.WIDTH) this.x -= GAME.WIDTH;
+            // Horizontal wrapping is handled in applyMovementPattern
         }
     }
     
@@ -774,10 +778,10 @@ function startWave() {
     const formationData = { direction: 1 };
     
     switch (type) {
-        case 5: // Steam Irons - 3 vertical columns, 2 per column
+        case 5: // Steam Irons - 3 vertical columns, 4 per column
             for (let col = 0; col < 3; col++) {
-                for (let row = 0; row < 2; row++) {
-                    const index = col * 2 + row;
+                for (let row = 0; row < 4; row++) {
+                    const index = col * 4 + row;
                     gameState.enemies.push(new Enemy(index, gameState.waveNumber, row, col, formationData));
                 }
             }
@@ -959,11 +963,11 @@ function checkCollisions() {
             }
         });
         
-        // Enemies vs player
+        // Enemies vs player (only direct collision, no edge kills)
         gameState.enemies.forEach(enemy => {
             if (!enemy.isAlive) return;
             
-            if (checkCollision(enemy.getBounds(), playerBounds) || enemy.y >= GAME.PLAYER.Y - 10) {
+            if (checkCollision(enemy.getBounds(), playerBounds)) {
                 enemy.isAlive = false;
                 playerHit();
             }
@@ -971,11 +975,22 @@ function checkCollisions() {
     }
 }
 
-// Sprite drawing helper
-function drawSprite(sprite, colors, x, y, alpha = 1) {
-    const pixelSize = scale * (16 / sprite[0].length); // Scale based on sprite width
-    
+// Sprite drawing helper - uses image if available, falls back to pixel array
+function drawSprite(sprite, colors, x, y, alpha = 1, spriteName = null) {
     ctx.globalAlpha = alpha;
+    
+    // Use image sprite if available
+    if (spriteName && SPRITE_IMAGES[spriteName]) {
+        const img = SPRITE_IMAGES[spriteName];
+        const drawWidth = 16 * scale;
+        const drawHeight = (img.height / img.width) * 16 * scale;
+        ctx.drawImage(img, x * scale, y * scale, drawWidth, drawHeight);
+        ctx.globalAlpha = 1;
+        return;
+    }
+    
+    // Fallback to pixel-based sprite
+    const pixelSize = scale * (16 / sprite[0].length);
     for (let row = 0; row < sprite.length; row++) {
         for (let col = 0; col < sprite[row].length; col++) {
             const colorIndex = sprite[row][col];
@@ -994,12 +1009,24 @@ function drawSprite(sprite, colors, x, y, alpha = 1) {
 }
 
 // Sprite drawing with scale (for diamond spin animation)
-function drawSpriteScaled(sprite, colors, x, y, scaleX, scaleY, alpha = 1) {
+function drawSpriteScaled(sprite, colors, x, y, scaleX, scaleY, alpha = 1, spriteName = null) {
+    ctx.globalAlpha = alpha;
+    
+    // Use image sprite if available
+    if (spriteName && SPRITE_IMAGES[spriteName]) {
+        const img = SPRITE_IMAGES[spriteName];
+        const drawWidth = 16 * scale * scaleX;
+        const drawHeight = (img.height / img.width) * 16 * scale * scaleY;
+        ctx.drawImage(img, x * scale, y * scale, drawWidth, drawHeight);
+        ctx.globalAlpha = 1;
+        return;
+    }
+    
+    // Fallback to pixel-based sprite
     const basePixelSize = scale * (16 / sprite[0].length);
     const pixelWidth = basePixelSize * scaleX;
     const pixelHeight = basePixelSize * scaleY;
     
-    ctx.globalAlpha = alpha;
     for (let row = 0; row < sprite.length; row++) {
         for (let col = 0; col < sprite[row].length; col++) {
             const colorIndex = sprite[row][col];
@@ -1080,7 +1107,8 @@ function render() {
                 enemy.y - GAME.ENEMY.HEIGHT / 2,
                 diamondScale,
                 1,
-                1
+                1,
+                spriteName
             );
         } else {
             drawSprite(
@@ -1088,7 +1116,8 @@ function render() {
                 colors,
                 enemy.x - GAME.ENEMY.WIDTH / 2,
                 enemy.y - GAME.ENEMY.HEIGHT / 2,
-                1
+                1,
+                spriteName
             );
         }
     });
@@ -1114,7 +1143,8 @@ function render() {
             SPRITE_COLORS.player,
             gameState.player.x - GAME.PLAYER.WIDTH / 2,
             gameState.player.y - GAME.PLAYER.HEIGHT / 2,
-            flash ? 0.3 : 1
+            flash ? 0.3 : 1,
+            'player'
         );
     }
     
@@ -1276,6 +1306,13 @@ if (gameState.highScore > 0) {
     document.getElementById('highScoreDisplay').textContent = `HIGH SCORE: ${gameState.highScore}`;
 }
 
-// Start
-update();
+// Load sprites then start the game loop
+loadSprites().then(() => {
+    console.log('Sprites loaded:', Object.keys(SPRITE_IMAGES).length);
+    update();
+}).catch(err => {
+    console.error('Error loading sprites:', err);
+    // Start anyway with fallback pixel sprites
+    update();
+});
 

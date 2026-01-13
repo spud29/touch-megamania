@@ -321,8 +321,18 @@ let gameState = {
     playerName: 'PLAYER'
 };
 
-// Leaderboard API URL (relative to current page)
-const LEADERBOARD_API = 'leaderboard.php';
+// JSONbin.io Configuration
+// To set up your own leaderboard:
+// 1. Create a free account at https://jsonbin.io
+// 2. Create a new bin with content: []
+// 3. Copy your Bin ID and Access Key below
+const JSONBIN_CONFIG = {
+    BIN_ID: '69669c84ae596e708fda37a3',      // Replace with your JSONbin bin ID
+    ACCESS_KEY: '$2a$10$a2BacgdgjkZy86RdFWVpOeQayWgBIOs7yYqcxJ1Ko7bKPr4GwBRZS', // Replace with your JSONbin access key
+    MAX_SCORES: 10  // Number of top scores to keep
+};
+
+const JSONBIN_API = `https://api.jsonbin.io/v3/b/${JSONBIN_CONFIG.BIN_ID}`;
 
 // Canvas setup
 const canvas = document.getElementById('gameCanvas');
@@ -763,15 +773,33 @@ function playSound(type) {
     }
 }
 
-// Leaderboard Functions
+// Leaderboard Functions (JSONbin.io)
 async function fetchLeaderboard() {
-    try {
-        const response = await fetch(LEADERBOARD_API);
-        const data = await response.json();
-        if (data.success) {
-            return data.scores;
-        }
+    // Check if JSONbin is configured
+    if (JSONBIN_CONFIG.BIN_ID === 'YOUR_BIN_ID_HERE') {
+        console.warn('JSONbin not configured. Set your BIN_ID and ACCESS_KEY in game.js');
         return [];
+    }
+    
+    try {
+        const response = await fetch(`${JSONBIN_API}/latest`, {
+            headers: {
+                'X-Access-Key': JSONBIN_CONFIG.ACCESS_KEY
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        // JSONbin wraps data in a "record" property
+        const scores = data.record || [];
+        
+        // Sort by score descending and return top scores
+        return scores
+            .sort((a, b) => b.score - a.score)
+            .slice(0, JSONBIN_CONFIG.MAX_SCORES);
     } catch (error) {
         console.warn('Failed to fetch leaderboard:', error);
         return [];
@@ -779,19 +807,80 @@ async function fetchLeaderboard() {
 }
 
 async function submitScore(name, score, wave) {
+    // Check if JSONbin is configured
+    if (JSONBIN_CONFIG.BIN_ID === 'YOUR_BIN_ID_HERE') {
+        console.warn('JSONbin not configured. Score not submitted.');
+        return { success: false, scores: [], rank: 0 };
+    }
+    
     try {
-        const response = await fetch(LEADERBOARD_API, {
-            method: 'POST',
+        // First, fetch current scores
+        const getResponse = await fetch(`${JSONBIN_API}/latest`, {
             headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ name, score, wave })
+                'X-Access-Key': JSONBIN_CONFIG.ACCESS_KEY
+            }
         });
-        const data = await response.json();
-        return data;
+        
+        if (!getResponse.ok) {
+            throw new Error(`HTTP ${getResponse.status}`);
+        }
+        
+        const getData = await getResponse.json();
+        let scores = getData.record || [];
+        
+        // Add new score
+        const newScore = {
+            name: name.toUpperCase().substring(0, 12) || 'PLAYER',
+            score: score,
+            wave: wave,
+            date: new Date().toISOString()
+        };
+        scores.push(newScore);
+        
+        // Sort by score descending
+        scores.sort((a, b) => b.score - a.score);
+        
+        // Keep only top 100 scores (storage limit)
+        scores = scores.slice(0, 100);
+        
+        // Find the rank of the new score
+        let rank = 0;
+        for (let i = 0; i < scores.length; i++) {
+            if (scores[i].score === score && 
+                scores[i].name === newScore.name && 
+                scores[i].date === newScore.date) {
+                rank = i + 1;
+                break;
+            }
+        }
+        
+        // Save updated scores
+        const putResponse = await fetch(JSONBIN_API, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Access-Key': JSONBIN_CONFIG.ACCESS_KEY
+            },
+            body: JSON.stringify(scores)
+        });
+        
+        if (!putResponse.ok) {
+            throw new Error(`HTTP ${putResponse.status}`);
+        }
+        
+        // Return top 10 for display
+        const topScores = scores.slice(0, JSONBIN_CONFIG.MAX_SCORES);
+        const onLeaderboard = rank > 0 && rank <= JSONBIN_CONFIG.MAX_SCORES;
+        
+        return {
+            success: true,
+            rank: rank,
+            onLeaderboard: onLeaderboard,
+            scores: topScores
+        };
     } catch (error) {
         console.warn('Failed to submit score:', error);
-        return { success: false, scores: [] };
+        return { success: false, scores: [], rank: 0 };
     }
 }
 

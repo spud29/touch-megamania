@@ -317,8 +317,12 @@ let gameState = {
     lastFireTime: 0,
     waveTransitionTimer: 0,
     respawnTimer: 0,
-    soundEnabled: true
+    soundEnabled: true,
+    playerName: 'PLAYER'
 };
+
+// Leaderboard API URL (relative to current page)
+const LEADERBOARD_API = 'leaderboard.php';
 
 // Canvas setup
 const canvas = document.getElementById('gameCanvas');
@@ -759,6 +763,91 @@ function playSound(type) {
     }
 }
 
+// Leaderboard Functions
+async function fetchLeaderboard() {
+    try {
+        const response = await fetch(LEADERBOARD_API);
+        const data = await response.json();
+        if (data.success) {
+            return data.scores;
+        }
+        return [];
+    } catch (error) {
+        console.warn('Failed to fetch leaderboard:', error);
+        return [];
+    }
+}
+
+async function submitScore(name, score, wave) {
+    try {
+        const response = await fetch(LEADERBOARD_API, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name, score, wave })
+        });
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.warn('Failed to submit score:', error);
+        return { success: false, scores: [] };
+    }
+}
+
+function renderLeaderboard(containerId, scores, highlightName = null) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    if (!scores || scores.length === 0) {
+        container.innerHTML = `
+            <div class="leaderboard-title">★ TOP SCORES ★</div>
+            <div class="leaderboard-empty">No scores yet. Be the first!</div>
+        `;
+        return;
+    }
+    
+    let tableHTML = `
+        <div class="leaderboard-title">★ TOP SCORES ★</div>
+        <table class="leaderboard-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>NAME</th>
+                    <th>SCORE</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    scores.forEach((entry, index) => {
+        const isHighlight = highlightName && entry.name === highlightName;
+        tableHTML += `
+            <tr class="${isHighlight ? 'highlight' : ''}">
+                <td>${index + 1}</td>
+                <td>${entry.name}</td>
+                <td>${entry.score.toLocaleString()}</td>
+            </tr>
+        `;
+    });
+    
+    tableHTML += '</tbody></table>';
+    container.innerHTML = tableHTML;
+}
+
+async function loadAndDisplayLeaderboard(containerId, highlightName = null) {
+    const container = document.getElementById(containerId);
+    if (container) {
+        container.innerHTML = `
+            <div class="leaderboard-title">★ TOP SCORES ★</div>
+            <div class="leaderboard-loading">Loading...</div>
+        `;
+    }
+    
+    const scores = await fetchLeaderboard();
+    renderLeaderboard(containerId, scores, highlightName);
+}
+
 // Game functions
 function startGame() {
     gameState.player = new Player();
@@ -836,7 +925,7 @@ function playerHit() {
     }
 }
 
-function gameOver() {
+async function gameOver() {
     gameState.phase = 'gameOver';
     
     if (gameState.score > gameState.highScore) {
@@ -849,8 +938,24 @@ function gameOver() {
     
     document.getElementById('finalScore').textContent = gameState.score;
     document.getElementById('waveReached').textContent = `WAVE ${gameState.waveNumber} REACHED`;
+    document.getElementById('leaderboardRank').textContent = '';
     hideElement('pauseBtn');
     showElement('gameoverScreen');
+    
+    // Submit score to leaderboard
+    const result = await submitScore(gameState.playerName, gameState.score, gameState.waveNumber);
+    
+    if (result.success) {
+        if (result.onLeaderboard) {
+            document.getElementById('leaderboardRank').textContent = `YOU RANKED #${result.rank}!`;
+        } else if (result.rank > 0) {
+            document.getElementById('leaderboardRank').textContent = `YOUR RANK: #${result.rank}`;
+        }
+        renderLeaderboard('gameoverLeaderboard', result.scores, gameState.playerName);
+    } else {
+        // Fallback: just load the leaderboard
+        await loadAndDisplayLeaderboard('gameoverLeaderboard', gameState.playerName);
+    }
 }
 
 // Update loop
@@ -1293,6 +1398,8 @@ document.getElementById('mainMenuBtn').addEventListener('click', () => {
     hideElement('gameoverScreen');
     showElement('menuScreen');
     gameState.phase = 'menu';
+    // Refresh leaderboard on menu
+    loadAndDisplayLeaderboard('menuLeaderboard');
 });
 
 document.getElementById('soundBtn').addEventListener('click', function() {
@@ -1312,9 +1419,28 @@ document.getElementById('pauseBtn').addEventListener('click', () => {
 
 // Load high score
 gameState.highScore = parseInt(localStorage.getItem('megamaniaHighScore') || '0');
-if (gameState.highScore > 0) {
-    document.getElementById('highScoreDisplay').textContent = `HIGH SCORE: ${gameState.highScore}`;
+
+// Load player name from localStorage
+gameState.playerName = localStorage.getItem('megamaniaPlayerName') || 'PLAYER';
+const playerNameInput = document.getElementById('playerNameInput');
+if (playerNameInput) {
+    playerNameInput.value = gameState.playerName;
+    
+    // Update player name when input changes
+    playerNameInput.addEventListener('input', function() {
+        const name = this.value.toUpperCase().trim() || 'PLAYER';
+        gameState.playerName = name;
+        localStorage.setItem('megamaniaPlayerName', name);
+    });
+    
+    // Ensure uppercase display
+    playerNameInput.addEventListener('blur', function() {
+        this.value = this.value.toUpperCase().trim() || 'PLAYER';
+    });
 }
+
+// Load leaderboard on menu screen
+loadAndDisplayLeaderboard('menuLeaderboard');
 
 // Load sprites then start the game loop
 loadSprites().then(() => {

@@ -1,0 +1,1564 @@
+// Megamania Touch - Web Version
+
+// Sprite Data - Authentic Atari 2600 style pixel art
+// Based on the original 1982 Activision Megamania sprites
+// Using 8-pixel wide format doubled to 16 for display (each column repeated)
+const SPRITES = {
+    // Atari 2600 Blaster - triangular ship pointing up
+    player: [
+        [0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0],
+        [0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0],
+        [0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0],
+        [0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0],
+        [0,0,1,1,0,0,1,1,1,1,0,0,1,1,0,0],
+        [0,1,1,0,0,0,1,1,1,1,0,0,0,1,1,0],
+        [1,1,0,0,0,0,1,1,1,1,0,0,0,0,1,1]
+    ],
+    // Atari 2600 Hamburger - horizontal striped burger (simple bun-patty-bun)
+    hamburger: [
+        [0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0],
+        [0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+        [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,0],
+        [0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+        [0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+        [0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0]
+    ],
+    // Atari 2600 Cookie - round with chocolate chips (dots)
+    cookie: [
+        [0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0],
+        [0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+        [0,1,1,1,2,2,1,1,1,1,2,2,1,1,1,0],
+        [0,1,1,1,2,2,1,1,1,1,2,2,1,1,1,0],
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+        [1,1,1,1,1,1,2,2,2,2,1,1,1,1,1,1],
+        [1,1,1,1,1,1,2,2,2,2,1,1,1,1,1,1],
+        [1,1,2,2,1,1,1,1,1,1,1,1,2,2,1,1],
+        [1,1,2,2,1,1,1,1,1,1,1,1,2,2,1,1],
+        [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+        [0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+        [0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0]
+    ],
+    // Atari 2600 Bug - insect with antennae and legs
+    bug: [
+        [1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1],
+        [0,0,1,1,0,0,0,0,0,0,0,0,1,1,0,0],
+        [0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0],
+        [1,1,0,0,1,1,1,1,1,1,1,1,0,0,1,1],
+        [0,0,1,1,1,1,2,2,2,2,1,1,1,1,0,0],
+        [0,0,0,0,1,1,2,2,2,2,1,1,0,0,0,0],
+        [1,1,0,0,1,1,1,1,1,1,1,1,0,0,1,1],
+        [0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+        [0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0],
+        [0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0]
+    ],
+    // Atari 2600 Radial Tire - circular with hub pattern
+    tire: [
+        [0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0],
+        [0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+        [0,1,1,1,1,1,0,0,0,0,1,1,1,1,1,0],
+        [0,1,1,1,0,0,0,0,0,0,0,0,1,1,1,0],
+        [1,1,1,0,0,0,1,1,1,1,0,0,0,1,1,1],
+        [1,1,1,0,0,1,1,1,1,1,1,0,0,1,1,1],
+        [1,1,0,0,1,1,1,0,0,1,1,1,0,0,1,1],
+        [1,1,0,0,1,1,0,0,0,0,1,1,0,0,1,1],
+        [1,1,0,0,1,1,0,0,0,0,1,1,0,0,1,1],
+        [1,1,0,0,1,1,1,0,0,1,1,1,0,0,1,1],
+        [1,1,1,0,0,1,1,1,1,1,1,0,0,1,1,1],
+        [1,1,1,0,0,0,1,1,1,1,0,0,0,1,1,1],
+        [0,1,1,1,0,0,0,0,0,0,0,0,1,1,1,0],
+        [0,1,1,1,1,1,0,0,0,0,1,1,1,1,1,0],
+        [0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+        [0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0]
+    ],
+    // Atari 2600 Diamond - simple gem shape
+    diamond: [
+        [0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0],
+        [0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0],
+        [0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0],
+        [0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0],
+        [0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+        [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+        [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+        [0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+        [0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0],
+        [0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0],
+        [0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0],
+        [0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0]
+    ],
+    // Atari 2600 Steam Iron - triangular iron shape
+    iron: [
+        [0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1],
+        [0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1],
+        [0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1],
+        [0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1],
+        [0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1],
+        [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+        [0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0]
+    ],
+    // Atari 2600 Bow Tie - symmetrical bow shape
+    bowtie: [
+        [1,1,1,0,0,0,0,0,0,0,0,0,0,1,1,1],
+        [1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1],
+        [1,1,1,1,1,0,0,0,0,0,0,1,1,1,1,1],
+        [0,1,1,1,1,1,0,0,0,0,1,1,1,1,1,0],
+        [0,0,1,1,1,1,1,0,0,1,1,1,1,1,0,0],
+        [0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0],
+        [0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0],
+        [0,0,1,1,1,1,1,0,0,1,1,1,1,1,0,0],
+        [0,1,1,1,1,1,0,0,0,0,1,1,1,1,1,0],
+        [1,1,1,1,1,0,0,0,0,0,0,1,1,1,1,1],
+        [1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1],
+        [1,1,1,0,0,0,0,0,0,0,0,0,0,1,1,1]
+    ],
+    // Atari 2600 Space Dice - square die with 5 pips
+    dice: [
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+        [1,1,2,2,2,1,1,1,1,1,1,2,2,2,1,1],
+        [1,1,2,2,2,1,1,1,1,1,1,2,2,2,1,1],
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+        [1,1,1,1,1,1,1,2,2,1,1,1,1,1,1,1],
+        [1,1,1,1,1,1,1,2,2,1,1,1,1,1,1,1],
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+        [1,1,2,2,2,1,1,1,1,1,1,2,2,2,1,1],
+        [1,1,2,2,2,1,1,1,1,1,1,2,2,2,1,1],
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+    ]
+};
+
+// Authentic Atari 2600 color palettes for each sprite
+// Based on the original 1982 Activision game
+// Atari 2600 sprites were typically solid colors with minimal shading
+const SPRITE_COLORS = {
+    player: ['#6688ff'],                     // Blue blaster
+    hamburger: ['#ff6688', '#aa4466'],       // Pink (cycle 1)
+    cookie: ['#ffcc00', '#885500'],          // Yellow with brown chips (cycle 1)
+    bug: ['#44dd66', '#226633'],             // Green (cycle 1)
+    tire: ['#ff6688'],                       // Pink (cycle 1)
+    diamond: ['#44dd66'],                    // Green (cycle 1)
+    iron: ['#ffcc00'],                       // Yellow (cycle 1)
+    bowtie: ['#ff8833'],                     // Orange (cycle 1)
+    dice: ['#ffcc00', '#000000']             // Yellow with black pips
+};
+
+// MegaCycle color palettes - colors rotate after completing all 8 waves
+// Based on authentic Atari 2600 appearance: colors alternate odd/even cycles
+const CYCLE_PALETTES = {
+    hamburger: [
+        ['#ff6688', '#aa4466'],    // Cycle 1 (odd): Pink
+        ['#44dd66', '#228844'],    // Cycle 2 (even): Green
+        ['#ff6688', '#aa4466'],    // Cycle 3 (odd): Pink
+        ['#44dd66', '#228844'],    // Cycle 4 (even): Green
+    ],
+    cookie: [
+        ['#ffcc00', '#885500'],    // Cycle 1 (odd): Yellow
+        ['#ff8833', '#884400'],    // Cycle 2 (even): Orange
+        ['#ffcc00', '#885500'],    // Cycle 3 (odd): Yellow
+        ['#ff8833', '#884400'],    // Cycle 4 (even): Orange
+    ],
+    bug: [
+        ['#44dd66', '#226633'],    // Cycle 1 (odd): Green
+        ['#ff6688', '#aa4466'],    // Cycle 2 (even): Pink
+        ['#44dd66', '#226633'],    // Cycle 3 (odd): Green
+        ['#ff6688', '#aa4466'],    // Cycle 4 (even): Pink
+    ],
+    tire: [
+        ['#ff6688'],    // Cycle 1 (odd): Pink
+        ['#44dd66'],    // Cycle 2 (even): Green
+        ['#ff6688'],    // Cycle 3 (odd): Pink
+        ['#44dd66'],    // Cycle 4 (even): Green
+    ],
+    diamond: [
+        ['#44dd66'],    // Cycle 1 (odd): Green
+        ['#ffcc00'],    // Cycle 2 (even): Yellow
+        ['#44dd66'],    // Cycle 3 (odd): Green
+        ['#ffcc00'],    // Cycle 4 (even): Yellow
+    ],
+    iron: [
+        ['#ffcc00'],    // Cycle 1 (odd): Yellow
+        ['#ff6688'],    // Cycle 2 (even): Pink
+        ['#ffcc00'],    // Cycle 3 (odd): Yellow
+        ['#ff6688'],    // Cycle 4 (even): Pink
+    ],
+    bowtie: [
+        ['#ff8833'],    // Cycle 1 (odd): Orange
+        ['#44dd66'],    // Cycle 2 (even): Green
+        ['#ff8833'],    // Cycle 3 (odd): Orange
+        ['#44dd66'],    // Cycle 4 (even): Green
+    ],
+    dice: [
+        ['#ffcc00', '#000000'],    // Always yellow with black pips - never changes
+    ]
+};
+
+// Sprite image paths for loading actual image files
+const SPRITE_PATHS = {
+    player: 'sprites/player.webp',
+    hamburger: 'sprites/hamburger.webp',
+    cookie: 'sprites/cookie.webp',
+    bug: 'sprites/bug.webp',
+    tire: 'sprites/tire.webp',
+    diamond: 'sprites/diamond.webp',
+    iron: 'sprites/iron.webp',
+    bowtie: 'sprites/bowtie.webp',
+    dice: 'sprites/dice.webp'
+};
+
+// Loaded sprite images will be stored here
+const SPRITE_IMAGES = {};
+
+// Load all sprite images - returns a Promise that resolves when all images are loaded
+function loadSprites() {
+    const promises = Object.entries(SPRITE_PATHS).map(([name, path]) => {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => {
+                SPRITE_IMAGES[name] = img;
+                resolve();
+            };
+            img.onerror = () => {
+                console.warn(`Failed to load sprite: ${path}`);
+                resolve(); // Resolve anyway to allow fallback to pixel sprites
+            };
+            img.src = path;
+        });
+    });
+    return Promise.all(promises);
+}
+
+// Game Constants
+const GAME = {
+    WIDTH: 160,
+    HEIGHT: 192,
+    PIXEL_SCALE: 4,
+    
+    PLAYER: {
+        WIDTH: 16,
+        HEIGHT: 8,
+        Y: 170,
+        SPEED: 200,
+        FIRE_RATE: 0.25,
+        START_LIVES: 3
+    },
+    
+    PROJECTILE: {
+        WIDTH: 2,
+        HEIGHT: 6,
+        PLAYER_SPEED: 300,
+        ENEMY_SPEED: 150
+    },
+    
+    ENEMY: {
+        WIDTH: 16,
+        HEIGHT: 12,
+        COUNT: 4,
+        BASE_SPEED: 60,
+        FIRE_CHANCE: 0.005
+    },
+    
+    ENERGY: {
+        MAX: 100,
+        DEPLETION_RATE: 3.5,
+        RESTORE_PER_KILL: 4.0
+    },
+    
+    SCORE: {
+        WAVE_BONUS: 500
+    }
+};
+
+// Authentic Atari 2600 point values per enemy type
+// Index corresponds to enemy type (0-7)
+// First cycle uses firstCycle value, subsequent cycles use laterCycles value
+const ENEMY_POINTS = [
+    { firstCycle: 20, laterCycles: 90 },   // 0: Hamburger
+    { firstCycle: 30, laterCycles: 90 },   // 1: Cookie
+    { firstCycle: 40, laterCycles: 90 },   // 2: Bug
+    { firstCycle: 50, laterCycles: 90 },   // 3: Radial Tire
+    { firstCycle: 60, laterCycles: 90 },   // 4: Diamond
+    { firstCycle: 70, laterCycles: 90 },   // 5: Steam Iron
+    { firstCycle: 80, laterCycles: 90 },   // 6: Bow Tie
+    { firstCycle: 90, laterCycles: 90 }    // 7: Space Dice (always 90)
+];
+
+// Enemy Types - Names and display colors matching Atari 2600 wave announcements
+const ENEMY_TYPES = [
+    { name: 'HAMBURGERS', color: '#ff6688' },      // Pink
+    { name: 'COOKIES', color: '#ffcc00' },          // Yellow
+    { name: 'BUGS', color: '#44dd66' },             // Green
+    { name: 'RADIAL TIRES', color: '#ff6688' },    // Pink
+    { name: 'DIAMONDS', color: '#44dd66' },         // Green
+    { name: 'STEAM IRONS', color: '#ffcc00' },      // Yellow
+    { name: 'BOW TIES', color: '#ff8833' },         // Orange
+    { name: 'SPACE DICE', color: '#ffcc00' }        // Yellow
+];
+
+// Game Phase Constants
+const PHASE = {
+    MENU: 'menu',
+    PLAYING: 'playing',
+    PAUSED: 'paused',
+    WAVE_TRANSITION: 'waveTransition',
+    RESPAWNING: 'respawning',
+    GAME_OVER: 'gameOver'
+};
+
+// Game State
+let gameState = {
+    phase: PHASE.MENU,
+    player: null,
+    enemies: [],
+    projectiles: [],
+    explosions: [],
+    score: 0,
+    waveNumber: 1,
+    energy: GAME.ENERGY.MAX,
+    highScore: 0,
+    gameTime: 0,
+    lastFireTime: 0,
+    waveTransitionTimer: 0,
+    respawnTimer: 0,
+    soundEnabled: true,
+    playerName: 'PLAYER'
+};
+
+// JSONbin.io Configuration
+// WARNING: API credentials are exposed in client-side code.
+// Anyone can view-source and read/write/delete your leaderboard data.
+// For production use, proxy requests through a server-side API.
+// To set up your own leaderboard:
+// 1. Create a free account at https://jsonbin.io
+// 2. Create a new bin with content: []
+// 3. Copy your Bin ID and Access Key below
+const JSONBIN_CONFIG = {
+    BIN_ID: '69669c84ae596e708fda37a3',      // Replace with your JSONbin bin ID
+    ACCESS_KEY: '$2a$10$a2BacgdgjkZy86RdFWVpOeQayWgBIOs7yYqcxJ1Ko7bKPr4GwBRZS', // Replace with your JSONbin access key
+    MAX_SCORES: 10  // Number of top scores to keep
+};
+
+const JSONBIN_API = `https://api.jsonbin.io/v3/b/${JSONBIN_CONFIG.BIN_ID}`;
+
+// Canvas setup
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+let scale = 1;
+
+function resizeCanvas() {
+    const gameRatio = GAME.WIDTH / GAME.HEIGHT;
+    const screenRatio = window.innerWidth / window.innerHeight;
+    
+    if (screenRatio > gameRatio) {
+        canvas.height = window.innerHeight;
+        canvas.width = canvas.height * gameRatio;
+    } else {
+        canvas.width = window.innerWidth;
+        canvas.height = canvas.width / gameRatio;
+    }
+    
+    scale = canvas.width / GAME.WIDTH;
+    
+    // Center canvas
+    canvas.style.margin = 'auto';
+}
+
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+// Player class
+class Player {
+    constructor() {
+        this.x = GAME.WIDTH / 2;
+        this.y = GAME.PLAYER.Y;
+        this.lives = GAME.PLAYER.START_LIVES;
+        this.isInvulnerable = false;
+        this.invulnerabilityTimer = 0;
+    }
+    
+    update(dt) {
+        if (this.isInvulnerable) {
+            this.invulnerabilityTimer -= dt;
+            if (this.invulnerabilityTimer <= 0) {
+                this.isInvulnerable = false;
+            }
+        }
+    }
+    
+    reset() {
+        this.x = GAME.WIDTH / 2;
+        this.isInvulnerable = true;
+        this.invulnerabilityTimer = 2.0;
+    }
+    
+    getBounds() {
+        return {
+            x: this.x - GAME.PLAYER.WIDTH / 2,
+            y: this.y - GAME.PLAYER.HEIGHT / 2,
+            width: GAME.PLAYER.WIDTH,
+            height: GAME.PLAYER.HEIGHT
+        };
+    }
+}
+
+// Enemy class with row-based formation support
+class Enemy {
+    constructor(index, waveNumber, row = 0, col = 0, formationData = null) {
+        this.type = (waveNumber - 1) % 8;
+        this.typeData = ENEMY_TYPES[this.type];
+        this.waveNumber = waveNumber;
+        this.megaCycle = Math.floor((waveNumber - 1) / 8);  // Which MegaCycle we're in (0, 1, 2...)
+        
+        // Formation data
+        this.row = row;
+        this.col = col;
+        this.index = index;
+        this.formationData = formationData || {};
+        
+        // Position setup varies by enemy type
+        this.setupInitialPosition();
+        
+        this.x = this.initialX;
+        this.y = this.initialY;
+        this.timeAlive = 0;
+        this.isAlive = true;
+        this.speedMult = 1 + this.megaCycle * 0.25;
+        
+        // Movement state
+        this.direction = 1;  // 1 = right, -1 = left
+        this.dipState = 0;   // For dip maneuvers
+        this.dipTimer = 0;
+        this.spinAngle = Math.random() * Math.PI * 2;  // For diamond spin
+        
+        // Dice-specific: random angle for diagonal movement in later cycles
+        this.diceAngle = (Math.random() - 0.5) * Math.PI / 3;  // Random angle ±30 degrees
+    }
+    
+    setupInitialPosition() {
+        // Space enemies evenly across the screen
+        const colSpacing = GAME.WIDTH / (GAME.ENEMY.COUNT + 1);
+        
+        switch (this.type) {
+            case 5: // Steam Irons - 2 vertical columns
+                const ironColSpacing = GAME.WIDTH / 3;
+                this.initialX = ironColSpacing * (this.col + 1);
+                this.initialY = -20 - this.row * 40;
+                break;
+            case 7: // Dice - random horizontal positions
+                this.initialX = 20 + Math.random() * (GAME.WIDTH - 40);
+                this.initialY = -20 - this.index * 60;
+                break;
+            default: // Row-based enemies - single row
+                this.initialX = colSpacing * (this.col + 1);
+                this.initialY = 30;
+                break;
+        }
+        
+        // Set initial direction for alternating patterns
+        if (this.type === 3) { // Tires alternate by row
+            this.direction = (this.row % 2 === 0) ? 1 : -1;
+        } else {
+            this.direction = 1;
+        }
+    }
+    
+    update(dt) {
+        if (!this.isAlive) return;
+        
+        this.timeAlive += dt;
+        this.spinAngle += dt * 5;  // Spin animation for diamonds
+        this.applyMovementPattern(dt);
+    }
+    
+    applyMovementPattern(dt) {
+        const t = this.timeAlive;
+        
+        switch (this.type) {
+            case 0: this.moveHamburger(t, dt); break;
+            case 1: this.moveCookie(t, dt); break;
+            case 2: this.moveBug(t, dt); break;
+            case 3: this.moveTire(t, dt); break;
+            case 4: this.moveDiamond(t, dt); break;
+            case 5: this.moveIron(t, dt); break;
+            case 6: this.moveBowtie(t, dt); break;
+            case 7: this.moveDice(t, dt); break;
+        }
+        
+        // Wrap around screen edges (like original Megamania)
+        // Horizontal wrapping
+        if (this.x < -GAME.ENEMY.WIDTH / 2) {
+            this.x += GAME.WIDTH + GAME.ENEMY.WIDTH;
+        } else if (this.x > GAME.WIDTH + GAME.ENEMY.WIDTH / 2) {
+            this.x -= GAME.WIDTH + GAME.ENEMY.WIDTH;
+        }
+        
+        // Vertical wrapping - enemies wrap well above player zone (player at Y=170)
+        const wrapBottomThreshold = GAME.PLAYER.Y - 30;
+        const wrapAmount = GAME.HEIGHT + GAME.ENEMY.HEIGHT * 2;
+
+        if (this.y > wrapBottomThreshold) {
+            this.y -= wrapAmount;
+            this.initialY -= wrapAmount;
+        }
+        if (this.y < wrapBottomThreshold - wrapAmount) {
+            this.y += wrapAmount;
+            this.initialY += wrapAmount;
+        }
+    }
+    
+    // Hamburgers - horizontal streaming rows; pause/accelerate in later cycles
+    moveHamburger(t, dt) {
+        const baseSpeed = 50 * this.speedMult;
+        
+        if (this.megaCycle === 0) {
+            // Cycle 1: Constant streaming - wraps around screen edges
+            this.x += this.direction * baseSpeed * dt;
+        } else {
+            // Later cycles: Pause and accelerate pattern
+            const cycleTime = t % 3.0;
+            if (cycleTime < 1.5) {
+                // Pause phase - slight drift
+                this.x += this.direction * 10 * dt;
+            } else {
+                // Accelerate phase - fast movement
+                this.x += this.direction * baseSpeed * 2.5 * dt;
+            }
+        }
+        
+        // Slow descent
+        this.y = this.initialY + t * 8 * this.speedMult;
+    }
+    
+    // Cookies - unison horizontal with periodic "dip" maneuver
+    moveCookie(t, dt) {
+        const baseSpeed = 40 * this.speedMult;
+        const dipInterval = this.megaCycle === 0 ? 2.5 : 1.8;  // Faster dips in later cycles
+        
+        // All cookies use shared direction from formation data
+        const sharedDir = this.formationData.direction || 1;
+        
+        // Check for dip timing
+        const dipPhase = t % dipInterval;
+        
+        if (dipPhase < 0.3) {
+            // Dip down
+            this.dipState = 1;
+            const dipProgress = dipPhase / 0.3;
+            const dipAmount = this.megaCycle === 0 ? 20 : 40;  // Dive-bomb in later cycles
+            this.y = this.initialY + t * 6 * this.speedMult + Math.sin(dipProgress * Math.PI) * dipAmount;
+        } else {
+            this.dipState = 0;
+            this.y = this.initialY + t * 6 * this.speedMult;
+        }
+        
+        // Horizontal movement (all move in unison) - wraps around screen edges
+        this.x += sharedDir * baseSpeed * dt;
+    }
+    
+    // Bugs - horizontal with undulating vertical bob
+    moveBug(t, dt) {
+        const baseSpeed = 45 * this.speedMult;
+        
+        // Horizontal movement - wraps around screen edges
+        this.x += this.direction * baseSpeed * dt;
+        
+        // Undulating vertical bob while descending
+        const bobAmount = 8;
+        const bobSpeed = 4;
+        const baseY = this.initialY + t * 10 * this.speedMult;
+        this.y = baseY + Math.sin(t * bobSpeed + this.col * 0.5) * bobAmount;
+    }
+    
+    // Tires - alternating row directions with quick dangerous dip
+    moveTire(t, dt) {
+        const baseSpeed = 60 * this.speedMult;  // Faster than cookies
+        const dipInterval = 2.0;
+        
+        // Check for dip timing
+        const dipPhase = t % dipInterval;
+        
+        if (dipPhase < 0.2) {
+            // Quick dangerous dip
+            const dipProgress = dipPhase / 0.2;
+            const dipAmount = 30;
+            this.y = this.initialY + t * 8 * this.speedMult + Math.sin(dipProgress * Math.PI) * dipAmount;
+        } else {
+            this.y = this.initialY + t * 8 * this.speedMult;
+        }
+        
+        // Horizontal movement - alternating rows, wraps around screen edges
+        this.x += this.direction * baseSpeed * dt;
+    }
+    
+    // Diamonds - horizontal with pronounced vertical wave + spinning animation
+    moveDiamond(t, dt) {
+        const baseSpeed = 35 * this.speedMult;
+        
+        // Horizontal movement - wraps around screen edges
+        this.x += this.direction * baseSpeed * dt;
+        
+        // Pronounced vertical wave (bobbing)
+        const waveAmount = 15;
+        const waveSpeed = 3;
+        const baseY = this.initialY + t * 7 * this.speedMult;
+        this.y = baseY + Math.sin(t * waveSpeed + this.col * 0.8) * waveAmount;
+    }
+    
+    // Get diamond scale for spin animation (width changes)
+    getDiamondScale() {
+        return 0.5 + Math.abs(Math.cos(this.spinAngle)) * 0.5;
+    }
+    
+    // Steam Irons - 3 vertical columns descending with side-to-side wiggle
+    moveIron(t, dt) {
+        const wiggleAmount = 8;
+        const wiggleSpeed = 6;
+        const fallSpeed = 35 * this.speedMult;
+        
+        // Side-to-side wiggle
+        const baseX = this.initialX;
+        this.x = baseX + Math.sin(t * wiggleSpeed + this.row * 0.5) * wiggleAmount;
+        
+        // Descend vertically
+        this.y = this.initialY + t * fallSpeed;
+    }
+    
+    // Bow Ties - horizontal with dramatic swooping up/down motion
+    moveBowtie(t, dt) {
+        const baseSpeed = 40 * this.speedMult;
+        
+        // Horizontal movement - wraps around screen edges
+        this.x += this.direction * baseSpeed * dt;
+        
+        // Dramatic swooping - large amplitude, slower frequency
+        const swoopAmount = 25;
+        const swoopSpeed = 2;
+        const baseY = this.initialY + t * 8 * this.speedMult;
+        this.y = baseY + Math.sin(t * swoopSpeed + this.col * 1.0) * swoopAmount;
+    }
+    
+    // Dice - straight vertical drop (cycle 1); erratic diagonal (later cycles)
+    moveDice(t, dt) {
+        const fallSpeed = 80 * this.speedMult;
+        
+        if (this.megaCycle === 0) {
+            // Cycle 1: Straight down with spin
+            this.y = this.initialY + t * fallSpeed;
+            // Slight random wobble for visual interest
+            this.x = this.initialX + Math.sin(t * 8) * 3;
+        } else {
+            // Later cycles: Erratic diagonal angles
+            this.y = this.initialY + t * fallSpeed;
+            this.x = this.initialX + Math.tan(this.diceAngle) * t * fallSpeed;
+            // Horizontal wrapping is handled in applyMovementPattern
+        }
+    }
+    
+    getBounds() {
+        return {
+            x: this.x - GAME.ENEMY.WIDTH / 2,
+            y: this.y - GAME.ENEMY.HEIGHT / 2,
+            width: GAME.ENEMY.WIDTH,
+            height: GAME.ENEMY.HEIGHT
+        };
+    }
+}
+
+// Projectile class
+class Projectile {
+    constructor(x, y, isPlayer) {
+        this.x = x;
+        this.y = y;
+        this.isPlayer = isPlayer;
+        this.speed = isPlayer ? -GAME.PROJECTILE.PLAYER_SPEED : GAME.PROJECTILE.ENEMY_SPEED;
+        this.isActive = true;
+    }
+    
+    update(dt) {
+        this.y += this.speed * dt;
+        
+        if (this.y < -10 || this.y > GAME.HEIGHT + 10) {
+            this.isActive = false;
+        }
+    }
+    
+    getBounds() {
+        return {
+            x: this.x - GAME.PROJECTILE.WIDTH / 2,
+            y: this.y - GAME.PROJECTILE.HEIGHT / 2,
+            width: GAME.PROJECTILE.WIDTH,
+            height: GAME.PROJECTILE.HEIGHT
+        };
+    }
+}
+
+// Explosion class
+class Explosion {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.frame = 0;
+        this.maxFrames = 8;
+        this.frameTime = 0;
+        this.frameDuration = 0.04;
+    }
+    
+    update(dt) {
+        this.frameTime += dt;
+        if (this.frameTime >= this.frameDuration) {
+            this.frameTime = 0;
+            this.frame++;
+        }
+    }
+    
+    isComplete() {
+        return this.frame >= this.maxFrames;
+    }
+}
+
+// Collision detection
+function checkCollision(rect1, rect2) {
+    return rect1.x < rect2.x + rect2.width &&
+           rect1.x + rect1.width > rect2.x &&
+           rect1.y < rect2.y + rect2.height &&
+           rect1.y + rect1.height > rect2.y;
+}
+
+// Audio
+const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+function playSound(type) {
+    if (!gameState.soundEnabled) return;
+    
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.type = 'square';
+    
+    const now = audioContext.currentTime;
+    
+    switch(type) {
+        case 'shoot':
+            oscillator.frequency.setValueAtTime(880, now);
+            gainNode.gain.setValueAtTime(0.1, now);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+            oscillator.start(now);
+            oscillator.stop(now + 0.05);
+            break;
+        case 'explosion':
+            oscillator.frequency.setValueAtTime(150, now);
+            oscillator.frequency.exponentialRampToValueAtTime(50, now + 0.1);
+            gainNode.gain.setValueAtTime(0.2, now);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+            oscillator.start(now);
+            oscillator.stop(now + 0.1);
+            break;
+        case 'hit':
+            oscillator.frequency.setValueAtTime(220, now);
+            gainNode.gain.setValueAtTime(0.15, now);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+            oscillator.start(now);
+            oscillator.stop(now + 0.2);
+            break;
+        case 'wave':
+            oscillator.frequency.setValueAtTime(523, now);
+            oscillator.frequency.setValueAtTime(659, now + 0.1);
+            oscillator.frequency.setValueAtTime(784, now + 0.2);
+            oscillator.frequency.setValueAtTime(1047, now + 0.3);
+            gainNode.gain.setValueAtTime(0.1, now);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+            oscillator.start(now);
+            oscillator.stop(now + 0.4);
+            break;
+    }
+}
+
+// Leaderboard Functions (JSONbin.io)
+async function fetchLeaderboard() {
+    // Check if JSONbin is configured
+    if (JSONBIN_CONFIG.BIN_ID === 'YOUR_BIN_ID_HERE') {
+        console.warn('JSONbin not configured. Set your BIN_ID and ACCESS_KEY in game.js');
+        return [];
+    }
+    
+    try {
+        const response = await fetch(`${JSONBIN_API}/latest`, {
+            headers: {
+                'X-Access-Key': JSONBIN_CONFIG.ACCESS_KEY
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        // JSONbin wraps data in a "record" property
+        const scores = data.record || [];
+        
+        // Sort by score descending and return top scores
+        return scores
+            .sort((a, b) => b.score - a.score)
+            .slice(0, JSONBIN_CONFIG.MAX_SCORES);
+    } catch (error) {
+        console.warn('Failed to fetch leaderboard:', error);
+        return [];
+    }
+}
+
+async function submitScore(name, score, wave) {
+    // Check if JSONbin is configured
+    if (JSONBIN_CONFIG.BIN_ID === 'YOUR_BIN_ID_HERE') {
+        console.warn('JSONbin not configured. Score not submitted.');
+        return { success: false, scores: [], rank: 0 };
+    }
+    
+    try {
+        // First, fetch current scores
+        const getResponse = await fetch(`${JSONBIN_API}/latest`, {
+            headers: {
+                'X-Access-Key': JSONBIN_CONFIG.ACCESS_KEY
+            }
+        });
+        
+        if (!getResponse.ok) {
+            throw new Error(`HTTP ${getResponse.status}`);
+        }
+        
+        const getData = await getResponse.json();
+        let scores = getData.record || [];
+        
+        // Add new score
+        const newScore = {
+            name: name.toUpperCase().substring(0, 12) || 'PLAYER',
+            score: score,
+            wave: wave,
+            date: new Date().toISOString()
+        };
+        scores.push(newScore);
+        
+        // Sort by score descending
+        scores.sort((a, b) => b.score - a.score);
+        
+        // Keep only top 100 scores (storage limit)
+        scores = scores.slice(0, 100);
+        
+        // Find the rank of the new score
+        let rank = 0;
+        for (let i = 0; i < scores.length; i++) {
+            if (scores[i].score === score && 
+                scores[i].name === newScore.name && 
+                scores[i].date === newScore.date) {
+                rank = i + 1;
+                break;
+            }
+        }
+        
+        // Save updated scores
+        const putResponse = await fetch(JSONBIN_API, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Access-Key': JSONBIN_CONFIG.ACCESS_KEY
+            },
+            body: JSON.stringify(scores)
+        });
+        
+        if (!putResponse.ok) {
+            throw new Error(`HTTP ${putResponse.status}`);
+        }
+        
+        // Return top 10 for display
+        const topScores = scores.slice(0, JSONBIN_CONFIG.MAX_SCORES);
+        const onLeaderboard = rank > 0 && rank <= JSONBIN_CONFIG.MAX_SCORES;
+        
+        return {
+            success: true,
+            rank: rank,
+            onLeaderboard: onLeaderboard,
+            scores: topScores
+        };
+    } catch (error) {
+        console.warn('Failed to submit score:', error);
+        return { success: false, scores: [], rank: 0 };
+    }
+}
+
+function escapeHtml(text) {
+    const el = document.createElement('span');
+    el.textContent = text;
+    return el.innerHTML;
+}
+
+function renderLeaderboard(containerId, scores, highlightName = null) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    if (!scores || scores.length === 0) {
+        container.innerHTML = `
+            <div class="leaderboard-title">★ TOP SCORES ★</div>
+            <div class="leaderboard-empty">No scores yet. Be the first!</div>
+        `;
+        return;
+    }
+    
+    let tableHTML = `
+        <div class="leaderboard-title">★ TOP SCORES ★</div>
+        <table class="leaderboard-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>NAME</th>
+                    <th>SCORE</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    scores.forEach((entry, index) => {
+        const isHighlight = highlightName && entry.name === highlightName;
+        tableHTML += `
+            <tr class="${isHighlight ? 'highlight' : ''}">
+                <td>${index + 1}</td>
+                <td>${escapeHtml(entry.name)}</td>
+                <td>${entry.score.toLocaleString()}</td>
+            </tr>
+        `;
+    });
+    
+    tableHTML += '</tbody></table>';
+    container.innerHTML = tableHTML;
+}
+
+async function loadAndDisplayLeaderboard(containerId, highlightName = null) {
+    const container = document.getElementById(containerId);
+    if (container) {
+        container.innerHTML = `
+            <div class="leaderboard-title">★ TOP SCORES ★</div>
+            <div class="leaderboard-loading">Loading...</div>
+        `;
+    }
+    
+    const scores = await fetchLeaderboard();
+    renderLeaderboard(containerId, scores, highlightName);
+}
+
+// Game functions
+function startGame() {
+    gameState.player = new Player();
+    gameState.enemies = [];
+    gameState.projectiles = [];
+    gameState.explosions = [];
+    gameState.score = 0;
+    gameState.waveNumber = 1;
+    gameState.energy = GAME.ENERGY.MAX;
+    gameState.gameTime = 0;
+    gameState.lastFireTime = 0;
+    
+    startWave();
+    showElement('pauseBtn');
+}
+
+function startWave() {
+    gameState.enemies = [];
+    const type = (gameState.waveNumber - 1) % 8;
+    
+    // Shared formation data for coordinated movement
+    const formationData = { direction: 1 };
+    
+    switch (type) {
+        case 5: // Steam Irons - 2 vertical columns, 2 per column
+            for (let col = 0; col < 2; col++) {
+                for (let row = 0; row < 2; row++) {
+                    const index = col * 2 + row;
+                    gameState.enemies.push(new Enemy(index, gameState.waveNumber, row, col, formationData));
+                }
+            }
+            break;
+            
+        case 7: // Dice - scattered, random drops
+            for (let i = 0; i < GAME.ENEMY.COUNT; i++) {
+                gameState.enemies.push(new Enemy(i, gameState.waveNumber, 0, i, formationData));
+            }
+            break;
+            
+        default: // Row-based enemies (hamburgers, cookies, bugs, tires, diamonds, bowties)
+            // Single row formation for better spacing
+            for (let i = 0; i < GAME.ENEMY.COUNT; i++) {
+                gameState.enemies.push(new Enemy(i, gameState.waveNumber, 0, i, formationData));
+            }
+            break;
+    }
+    
+    gameState.energy = GAME.ENERGY.MAX;
+    gameState.projectiles = [];
+    gameState.phase = PHASE.WAVE_TRANSITION;
+    gameState.waveTransitionTimer = 2.0;
+}
+
+function fireProjectile() {
+    if (gameState.phase !== PHASE.PLAYING) return;
+    if (gameState.gameTime - gameState.lastFireTime < GAME.PLAYER.FIRE_RATE) return;
+    
+    gameState.lastFireTime = gameState.gameTime;
+    gameState.projectiles.push(new Projectile(gameState.player.x, gameState.player.y - GAME.PLAYER.HEIGHT / 2, true));
+    playSound('shoot');
+}
+
+function playerHit() {
+    if (gameState.player.isInvulnerable) return;
+    
+    gameState.player.lives--;
+    gameState.explosions.push(new Explosion(gameState.player.x, gameState.player.y));
+    playSound('hit');
+    
+    if (gameState.player.lives <= 0) {
+        gameOver();
+    } else {
+        gameState.phase = PHASE.RESPAWNING;
+        gameState.respawnTimer = 1.5;
+    }
+}
+
+async function gameOver() {
+    gameState.phase = PHASE.GAME_OVER;
+    
+    if (gameState.score > gameState.highScore) {
+        gameState.highScore = gameState.score;
+        localStorage.setItem('megamaniaHighScore', gameState.highScore);
+        document.getElementById('newHighScore').style.display = 'block';
+    } else {
+        document.getElementById('newHighScore').style.display = 'none';
+    }
+    
+    document.getElementById('finalScore').textContent = gameState.score;
+    document.getElementById('waveReached').textContent = `WAVE ${gameState.waveNumber} REACHED`;
+    document.getElementById('leaderboardRank').textContent = '';
+    hideElement('pauseBtn');
+    showElement('gameoverScreen');
+    
+    // Submit score to leaderboard
+    const result = await submitScore(gameState.playerName, gameState.score, gameState.waveNumber);
+    
+    if (result.success) {
+        if (result.onLeaderboard) {
+            document.getElementById('leaderboardRank').textContent = `YOU RANKED #${result.rank}!`;
+        } else if (result.rank > 0) {
+            document.getElementById('leaderboardRank').textContent = `YOUR RANK: #${result.rank}`;
+        }
+        renderLeaderboard('gameoverLeaderboard', result.scores, gameState.playerName);
+    } else {
+        // Fallback: just load the leaderboard
+        await loadAndDisplayLeaderboard('gameoverLeaderboard', gameState.playerName);
+    }
+}
+
+// Update loop
+let lastTime = performance.now();
+
+function update() {
+    const currentTime = performance.now();
+    const dt = Math.min((currentTime - lastTime) / 1000, 1/30);
+    lastTime = currentTime;
+    
+    if (gameState.phase === PHASE.MENU || gameState.phase === PHASE.GAME_OVER) {
+        render();
+        requestAnimationFrame(update);
+        return;
+    }
+    
+    gameState.gameTime += dt;
+    
+    // Phase-specific updates
+    if (gameState.phase === PHASE.WAVE_TRANSITION) {
+        gameState.waveTransitionTimer -= dt;
+        if (gameState.waveTransitionTimer <= 0) {
+            gameState.phase = PHASE.PLAYING;
+        }
+    } else if (gameState.phase === PHASE.RESPAWNING) {
+        gameState.respawnTimer -= dt;
+        if (gameState.respawnTimer <= 0) {
+            gameState.player.reset();
+            gameState.phase = PHASE.PLAYING;
+        }
+    } else if (gameState.phase === PHASE.PLAYING) {
+        // Update player
+        gameState.player.update(dt);
+        
+        // Update projectiles
+        gameState.projectiles.forEach(p => p.update(dt));
+        gameState.projectiles = gameState.projectiles.filter(p => p.isActive);
+        
+        // Update enemies
+        gameState.enemies.forEach(e => e.update(dt));
+        
+        // Enemy firing - fire chance scales with wave number
+        const aliveEnemies = gameState.enemies.filter(e => e.isAlive);
+        const fireChance = GAME.ENEMY.FIRE_CHANCE * (1 + (gameState.waveNumber - 1) * 0.2);
+        if (aliveEnemies.length > 0 && Math.random() < fireChance) {
+            const enemy = aliveEnemies[Math.floor(Math.random() * aliveEnemies.length)];
+            gameState.projectiles.push(new Projectile(enemy.x, enemy.y + GAME.ENEMY.HEIGHT / 2, false));
+        }
+        
+        // Collisions
+        checkCollisions();
+        
+        // Update energy
+        gameState.energy -= GAME.ENERGY.DEPLETION_RATE * dt;
+        if (gameState.energy <= 0) {
+            gameState.energy = 0;
+            playerHit();
+            gameState.energy = GAME.ENERGY.MAX;
+        }
+        
+        // Check wave completion
+        if (aliveEnemies.length === 0) {
+            gameState.score += GAME.SCORE.WAVE_BONUS;
+            playSound('wave');
+            gameState.waveNumber++;
+            startWave();
+        }
+    }
+    
+    // Update explosions
+    gameState.explosions.forEach(e => e.update(dt));
+    gameState.explosions = gameState.explosions.filter(e => !e.isComplete());
+    
+    render();
+    requestAnimationFrame(update);
+}
+
+function checkCollisions() {
+    const playerBounds = gameState.player.getBounds();
+    
+    // Player projectiles vs enemies
+    gameState.projectiles.forEach(proj => {
+        if (!proj.isPlayer || !proj.isActive) return;
+        
+        const projBounds = proj.getBounds();
+        gameState.enemies.forEach(enemy => {
+            if (!enemy.isAlive) return;
+            
+            if (checkCollision(projBounds, enemy.getBounds())) {
+                proj.isActive = false;
+                enemy.isAlive = false;
+                gameState.explosions.push(new Explosion(enemy.x, enemy.y));
+                // Authentic Atari 2600 scoring: different points for first cycle vs later cycles
+                const pointData = ENEMY_POINTS[enemy.type];
+                const points = enemy.megaCycle === 0 ? pointData.firstCycle : Math.floor(pointData.laterCycles * (1 + enemy.megaCycle * 0.25));
+                gameState.score += points;
+                gameState.energy = Math.min(gameState.energy + GAME.ENERGY.RESTORE_PER_KILL, GAME.ENERGY.MAX);
+                playSound('explosion');
+            }
+        });
+    });
+    
+    // Enemy projectiles vs player
+    if (!gameState.player.isInvulnerable) {
+        gameState.projectiles.forEach(proj => {
+            if (proj.isPlayer || !proj.isActive) return;
+            
+            if (checkCollision(proj.getBounds(), playerBounds)) {
+                proj.isActive = false;
+                playerHit();
+            }
+        });
+        
+        // Enemies vs player (only direct collision, no edge kills)
+        gameState.enemies.forEach(enemy => {
+            if (!enemy.isAlive) return;
+            
+            if (checkCollision(enemy.getBounds(), playerBounds)) {
+                enemy.isAlive = false;
+                playerHit();
+            }
+        });
+    }
+}
+
+// Sprite drawing helper - uses image if available, falls back to pixel array
+function drawSprite(sprite, colors, x, y, alpha = 1, spriteName = null) {
+    ctx.globalAlpha = alpha;
+    
+    // Use image sprite if available
+    if (spriteName && SPRITE_IMAGES[spriteName]) {
+        const img = SPRITE_IMAGES[spriteName];
+        // Disable smoothing for crisp pixel art
+        ctx.imageSmoothingEnabled = false;
+        
+        // Draw at game's expected enemy/player size
+        const isPlayer = (spriteName === 'player');
+        const drawWidth = (isPlayer ? GAME.PLAYER.WIDTH : GAME.ENEMY.WIDTH) * scale;
+        const drawHeight = (isPlayer ? GAME.PLAYER.HEIGHT : GAME.ENEMY.HEIGHT) * scale;
+        
+        ctx.drawImage(img, x * scale, y * scale, drawWidth, drawHeight);
+        ctx.globalAlpha = 1;
+        return;
+    }
+    
+    // Fallback to pixel-based sprite
+    const pixelSize = scale * (16 / sprite[0].length);
+    for (let row = 0; row < sprite.length; row++) {
+        for (let col = 0; col < sprite[row].length; col++) {
+            const colorIndex = sprite[row][col];
+            if (colorIndex > 0 && colorIndex <= colors.length) {
+                ctx.fillStyle = colors[colorIndex - 1];
+                ctx.fillRect(
+                    x * scale + col * pixelSize,
+                    y * scale + row * pixelSize,
+                    pixelSize,
+                    pixelSize
+                );
+            }
+        }
+    }
+    ctx.globalAlpha = 1;
+}
+
+// Sprite drawing with scale (for diamond spin animation)
+function drawSpriteScaled(sprite, colors, x, y, scaleX, scaleY, alpha = 1, spriteName = null) {
+    ctx.globalAlpha = alpha;
+    
+    // Use image sprite if available
+    if (spriteName && SPRITE_IMAGES[spriteName]) {
+        const img = SPRITE_IMAGES[spriteName];
+        // Disable smoothing for crisp pixel art
+        ctx.imageSmoothingEnabled = false;
+        
+        const drawWidth = GAME.ENEMY.WIDTH * scale * scaleX;
+        const drawHeight = GAME.ENEMY.HEIGHT * scale * scaleY;
+        
+        ctx.drawImage(img, x * scale, y * scale, drawWidth, drawHeight);
+        ctx.globalAlpha = 1;
+        return;
+    }
+    
+    // Fallback to pixel-based sprite
+    const basePixelSize = scale * (16 / sprite[0].length);
+    const pixelWidth = basePixelSize * scaleX;
+    const pixelHeight = basePixelSize * scaleY;
+    
+    for (let row = 0; row < sprite.length; row++) {
+        for (let col = 0; col < sprite[row].length; col++) {
+            const colorIndex = sprite[row][col];
+            if (colorIndex > 0 && colorIndex <= colors.length) {
+                ctx.fillStyle = colors[colorIndex - 1];
+                ctx.fillRect(
+                    x * scale + col * pixelWidth,
+                    y * scale + row * pixelHeight,
+                    pixelWidth,
+                    pixelHeight
+                );
+            }
+        }
+    }
+    ctx.globalAlpha = 1;
+}
+
+// Get sprite for enemy type
+function getEnemySprite(type) {
+    const sprites = ['hamburger', 'cookie', 'bug', 'tire', 'diamond', 'iron', 'bowtie', 'dice'];
+    return sprites[type];
+}
+
+// Get colors for enemy based on MegaCycle
+function getEnemyColors(enemy) {
+    const spriteName = getEnemySprite(enemy.type);
+    const palettes = CYCLE_PALETTES[spriteName];
+    
+    if (!palettes || palettes.length === 0) {
+        return SPRITE_COLORS[spriteName];
+    }
+    
+    // Dice always uses cycle 0 colors (always yellow)
+    if (enemy.type === 7) {
+        return palettes[0];
+    }
+    
+    // Get color palette based on MegaCycle, cycling through available palettes
+    const paletteIndex = enemy.megaCycle % palettes.length;
+    return palettes[paletteIndex];
+}
+
+// Rendering
+function render() {
+    // Clear
+    ctx.fillStyle = '#001';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw stars
+    ctx.fillStyle = '#fff';
+    for (let i = 0; i < 50; i++) {
+        const x = (i * 47.3 % GAME.WIDTH) * scale;
+        const y = (i * 21.7 % GAME.HEIGHT) * scale;
+        const brightness = 0.3 + (Math.sin(i + gameState.gameTime) + 1) / 4;
+        ctx.globalAlpha = brightness;
+        ctx.fillRect(x, y, scale, scale);
+    }
+    ctx.globalAlpha = 1;
+    
+    if (gameState.phase === PHASE.MENU || gameState.phase === PHASE.GAME_OVER) {
+        return;
+    }
+    
+    // Draw enemies
+    gameState.enemies.forEach(enemy => {
+        if (!enemy.isAlive) return;
+        const spriteName = getEnemySprite(enemy.type);
+        const spriteData = SPRITES[spriteName];
+        const colors = getEnemyColors(enemy);
+        
+        // Special handling for diamonds - spin animation affects width
+        if (enemy.type === 4) {
+            const diamondScale = enemy.getDiamondScale();
+            drawSpriteScaled(
+                spriteData,
+                colors,
+                enemy.x - (GAME.ENEMY.WIDTH * diamondScale) / 2,
+                enemy.y - GAME.ENEMY.HEIGHT / 2,
+                diamondScale,
+                1,
+                1,
+                spriteName
+            );
+        } else {
+            drawSprite(
+                spriteData,
+                colors,
+                enemy.x - GAME.ENEMY.WIDTH / 2,
+                enemy.y - GAME.ENEMY.HEIGHT / 2,
+                1,
+                spriteName
+            );
+        }
+    });
+    
+    // Draw projectiles with glow
+    gameState.projectiles.forEach(proj => {
+        const color = proj.isPlayer ? '#ff4' : '#f44';
+        // Glow
+        ctx.fillStyle = color;
+        ctx.globalAlpha = 0.3;
+        drawRect(proj.x - GAME.PROJECTILE.WIDTH, proj.y - GAME.PROJECTILE.HEIGHT, GAME.PROJECTILE.WIDTH * 2, GAME.PROJECTILE.HEIGHT * 2);
+        ctx.globalAlpha = 1;
+        // Core
+        ctx.fillStyle = color;
+        drawRect(proj.x - GAME.PROJECTILE.WIDTH / 2, proj.y - GAME.PROJECTILE.HEIGHT / 2, GAME.PROJECTILE.WIDTH, GAME.PROJECTILE.HEIGHT);
+    });
+    
+    // Draw player
+    if (gameState.player && gameState.phase !== PHASE.RESPAWNING) {
+        const flash = gameState.player.isInvulnerable && Math.sin(gameState.gameTime * 15) > 0;
+        drawSprite(
+            SPRITES.player,
+            SPRITE_COLORS.player,
+            gameState.player.x - GAME.PLAYER.WIDTH / 2,
+            gameState.player.y - GAME.PLAYER.HEIGHT / 2,
+            flash ? 0.3 : 1,
+            'player'
+        );
+    }
+    
+    // Draw explosions
+    gameState.explosions.forEach(exp => {
+        const progress = exp.frame / exp.maxFrames;
+        const radius = 12 * (0.3 + progress * 0.7);
+        ctx.globalAlpha = 1 - progress;
+        
+        for (let i = 0; i < 8; i++) {
+            const angle = (i / 8) * Math.PI * 2;
+            const x = exp.x + Math.cos(angle) * radius * (0.5 + progress * 0.5);
+            const y = exp.y + Math.sin(angle) * radius * (0.5 + progress * 0.5);
+            ctx.fillStyle = ['#ff0', '#f80', '#f00', '#fff'][Math.min(Math.floor(exp.frame / 2), 3)];
+            drawRect(x - 1, y - 1, 2, 2);
+        }
+        ctx.globalAlpha = 1;
+    });
+    
+    // HUD
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = '#fe8';
+    ctx.font = 'bold 14px monospace';
+    ctx.fillText(`SCORE: ${gameState.score}`, 10, 20);
+    ctx.fillText(`WAVE ${gameState.waveNumber}`, canvas.width / 2 - 40, 20);
+    ctx.fillText(`LIVES: ${gameState.player ? gameState.player.lives : 0}`, canvas.width - 100, 20);
+    
+    // Energy bar
+    const barWidth = canvas.width * 0.6;
+    const barHeight = 12;
+    const barX = canvas.width / 2 - barWidth / 2;
+    const barY = canvas.height - barHeight - 10;
+    
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(barX - 2, barY - 2, barWidth + 4, barHeight + 4);
+    ctx.strokeStyle = '#fe8';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(barX - 2, barY - 2, barWidth + 4, barHeight + 4);
+    
+    const energyWidth = barWidth * (gameState.energy / GAME.ENERGY.MAX);
+    ctx.fillStyle = gameState.energy < 30 ? '#f44' : '#48c';
+    ctx.fillRect(barX, barY, energyWidth, barHeight);
+    
+    ctx.fillStyle = '#fe8';
+    ctx.fillText('ENERGY', barX - 60, barY + 10);
+    
+    // Wave transition
+    if (gameState.phase === PHASE.WAVE_TRANSITION) {
+        const enemyType = ENEMY_TYPES[(gameState.waveNumber - 1) % 8];
+        ctx.fillStyle = enemyType.color;
+        ctx.font = 'bold 24px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(enemyType.name, canvas.width / 2, canvas.height / 2);
+        ctx.textAlign = 'left';
+    }
+    
+    ctx.restore();
+}
+
+function drawRect(x, y, w, h) {
+    ctx.fillRect(x * scale, y * scale, w * scale, h * scale);
+}
+
+// UI helpers
+function showElement(id) {
+    document.getElementById(id).classList.remove('hidden');
+}
+
+function hideElement(id) {
+    document.getElementById(id).classList.add('hidden');
+}
+
+// Touch controls
+let primaryTouch = null;
+
+canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    
+    if (gameState.phase !== PHASE.PLAYING && gameState.phase !== PHASE.RESPAWNING) return;
+    
+    for (let touch of e.changedTouches) {
+        if (!primaryTouch) {
+            primaryTouch = touch.identifier;
+            handleMove(touch);
+        } else {
+            fireProjectile();
+        }
+    }
+}, { passive: false });
+
+canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    
+    for (let touch of e.changedTouches) {
+        if (touch.identifier === primaryTouch) {
+            handleMove(touch);
+        }
+    }
+}, { passive: false });
+
+canvas.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    
+    for (let touch of e.changedTouches) {
+        if (touch.identifier === primaryTouch) {
+            primaryTouch = null;
+        }
+    }
+}, { passive: false });
+
+function handleMove(touch) {
+    if (!gameState.player) return;
+    
+    const rect = canvas.getBoundingClientRect();
+    const canvasX = touch.clientX - rect.left;
+    const gameX = (canvasX / canvas.width) * GAME.WIDTH;
+    
+    gameState.player.x = Math.max(GAME.PLAYER.WIDTH / 2, Math.min(GAME.WIDTH - GAME.PLAYER.WIDTH / 2, gameX));
+}
+
+// Button handlers
+document.getElementById('startBtn').addEventListener('click', () => {
+    hideElement('menuScreen');
+    startGame();
+});
+
+document.getElementById('playAgainBtn').addEventListener('click', () => {
+    hideElement('gameoverScreen');
+    startGame();
+});
+
+document.getElementById('mainMenuBtn').addEventListener('click', () => {
+    hideElement('gameoverScreen');
+    showElement('menuScreen');
+    gameState.phase = PHASE.MENU;
+    // Refresh leaderboard on menu
+    loadAndDisplayLeaderboard('menuLeaderboard');
+});
+
+document.getElementById('soundBtn').addEventListener('click', function() {
+    gameState.soundEnabled = !gameState.soundEnabled;
+    this.textContent = `SOUND: ${gameState.soundEnabled ? 'ON' : 'OFF'}`;
+    localStorage.setItem('megamaniaSound', gameState.soundEnabled);
+});
+
+document.getElementById('pauseBtn').addEventListener('click', () => {
+    if (gameState.phase === PHASE.PLAYING) {
+        gameState.phase = PHASE.PAUSED;
+        document.getElementById('pauseBtn').textContent = '▶';
+    } else if (gameState.phase === PHASE.PAUSED) {
+        gameState.phase = PHASE.PLAYING;
+        document.getElementById('pauseBtn').textContent = '❚❚';
+    }
+});
+
+// Load high score and sound preference
+gameState.highScore = parseInt(localStorage.getItem('megamaniaHighScore') || '0');
+const savedSound = localStorage.getItem('megamaniaSound');
+if (savedSound !== null) {
+    gameState.soundEnabled = savedSound === 'true';
+    document.getElementById('soundBtn').textContent = `SOUND: ${gameState.soundEnabled ? 'ON' : 'OFF'}`;
+}
+
+// Load player name from localStorage
+gameState.playerName = localStorage.getItem('megamaniaPlayerName') || 'PLAYER';
+const playerNameInput = document.getElementById('playerNameInput');
+if (playerNameInput) {
+    playerNameInput.value = gameState.playerName;
+    
+    // Update player name when input changes
+    playerNameInput.addEventListener('input', function() {
+        const name = this.value.toUpperCase().trim() || 'PLAYER';
+        gameState.playerName = name;
+        localStorage.setItem('megamaniaPlayerName', name);
+    });
+    
+    // Ensure uppercase display
+    playerNameInput.addEventListener('blur', function() {
+        this.value = this.value.toUpperCase().trim() || 'PLAYER';
+    });
+}
+
+// Load leaderboard on menu screen
+loadAndDisplayLeaderboard('menuLeaderboard');
+
+// Load sprites then start the game loop
+loadSprites().then(() => {
+    console.log('Sprites loaded:', Object.keys(SPRITE_IMAGES).length);
+    update();
+}).catch(err => {
+    console.error('Error loading sprites:', err);
+    // Start anyway with fallback pixel sprites
+    update();
+});
+

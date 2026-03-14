@@ -1,0 +1,11 @@
+{
+  "name": "Megamania Touch",
+  "short_name": "Megamania",
+  "description": "Touch-based recreation of the classic Atari 2600 game",
+  "start_url": "./index.html",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "background_color": "#000010",
+  "theme_color": "#000010"
+}
+

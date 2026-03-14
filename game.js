@@ -654,9 +654,9 @@ class Enemy {
             // Slight random wobble for visual interest
             this.x = this.initialX + Math.sin(t * 8) * 3;
         } else {
-            // Later cycles: Erratic diagonal angles
+            // Later cycles: Erratic diagonal angles (dt-based so horizontal wrap stays effective)
             this.y = this.initialY + t * fallSpeed;
-            this.x = this.initialX + Math.tan(this.diceAngle) * t * fallSpeed;
+            this.x += Math.tan(this.diceAngle) * fallSpeed * dt;
             // Horizontal wrapping is handled in applyMovementPattern
         }
     }

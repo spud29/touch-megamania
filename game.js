@@ -258,9 +258,9 @@ const GAME = {
     },
     
     ENEMY: {
-        WIDTH: 16,
-        HEIGHT: 12,
-        COUNT: 4,
+        WIDTH: 10,
+        HEIGHT: 8,
+        COUNT: 8,
         BASE_SPEED: 60,
         FIRE_CHANCE: 0.005
     },
@@ -446,14 +446,14 @@ class Enemy {
         const colSpacing = GAME.WIDTH / (GAME.ENEMY.COUNT + 1);
         
         switch (this.type) {
-            case 5: // Steam Irons - 2 vertical columns
-                const ironColSpacing = GAME.WIDTH / 3;
+            case 5: // Steam Irons - 4 vertical columns
+                const ironColSpacing = GAME.WIDTH / 5;
                 this.initialX = ironColSpacing * (this.col + 1);
                 this.initialY = -20 - this.row * 40;
                 break;
             case 7: // Dice - random horizontal positions
                 this.initialX = 20 + Math.random() * (GAME.WIDTH - 40);
-                this.initialY = -20 - this.index * 60;
+                this.initialY = -20 - this.index * 30;
                 break;
             default: // Row-based enemies - single row
                 this.initialX = colSpacing * (this.col + 1);
@@ -977,8 +977,8 @@ function startWave() {
     const formationData = { direction: 1 };
     
     switch (type) {
-        case 5: // Steam Irons - 2 vertical columns, 2 per column
-            for (let col = 0; col < 2; col++) {
+        case 5: // Steam Irons - 4 vertical columns, 2 per column
+            for (let col = 0; col < 4; col++) {
                 for (let row = 0; row < 2; row++) {
                     const index = col * 2 + row;
                     gameState.enemies.push(new Enemy(index, gameState.waveNumber, row, col, formationData));
